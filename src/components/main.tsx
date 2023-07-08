@@ -10,8 +10,8 @@ const Page = ({
   children
 }: PropsWithChildren<PageProps>) => {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center">
-      <main className={`container h-full flex flex-col items-center justify-start p-24 max-w-3xl rounded-2xl px-6 py-6 bg-slate-800 ${className}`}>
+    <div className="flex flex-col items-center justify-center">
+      <main className={`container h-full flex flex-col items-center justify-start m-8 p-24 max-w-3xl rounded-2xl px-6 py-6 bg-slate-800 ${className}`}>
         <Link href="/"><img src="/give-logo.svg" alt="Give" className="h-20 w-auto mx-auto my-6" /></Link>
         {children}
       </main>

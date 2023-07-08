@@ -1,64 +1,44 @@
 "use client"
 import { useEffect, useState } from 'react'
+import { useSession } from "next-auth/react"
 import Link from 'next/Link'
-import Page from '~/components/page'
+import Main from '~/components/main'
 import Title from '~/components/title'
-import { GoogleOAuthProvider } from '@react-oauth/google'
-import { GoogleLogin } from '@react-oauth/google'
-import jwtDecode from 'jwt-decode'
+import LinkButton from '~/components/linkbutton'
 
-export default function Home() {
-  const GoogleClientID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
-  //console.log('CLIENTID', GoogleClientID)
+export default function Page() {
+  const session = useSession()
+  console.log('SESSION?', session)
+  const loginText = 'Log in with your Google account'
+  const [welcome, setWelcome] = useState(loginText)
+  const [logged, setLogged] = useState(false)
 
-  const [welcome, setWelcome] = useState('')
-
-  const responseMessage = async (response) => {
-    console.log('Login', response)
-    const user = jwtDecode(response.credential);
-    console.log('USER', user)
-    console.log('Welcome', user.name, user.email)
-    setWelcome('Welcome '+user.name)
-    // TODO: save token in DB for authorization
+  function titleCase(str='') {
+    str = str.toLowerCase().split(' ')
+    for (var i = 0; i < str.length; i++) {
+      str[i] = str[i].charAt(0).toUpperCase() + str[i].slice(1)
+    }
+    return str.join(' ')
   }
 
-  const errorMessage = (error) => {
-    console.log('Error', error)
-  }
-
+  useEffect(()=>{
+    const name = session?.data?.user?.name
+    const welcomeText = 'Welcome '+titleCase(name)
+    setWelcome(name ? welcomeText : loginText)
+    setLogged(name ? true : false)
+  },[session])
+  
   return (
-    <GoogleOAuthProvider clientId={GoogleClientID}>
-      <Page>
-        <Title text="Partner Portal" />
-        <div className="py-4">
-          <li>Monitor your crypto donations</li>
-          <li>Create funding initiatives</li>
-          <li>Update donors by creating impact NFTs</li>
-          <li>Add or change crypto-wallets</li>
-        </div>
-        <h1 className="py-12">Log in with your google account</h1>
-        <div className="pb-4">
-          <GoogleLogin 
-            onSuccess={responseMessage} 
-            onError={errorMessage} 
-            itp_support="true"
-            logo_alignment="left" 
-            shape="rectangular"
-            size="large"
-            theme="filled_blue"
-            text="signin_with"
-            type="standard"
-            useOneTap="true"
-            ux_mode="popup"
-          />
-        </div>
-        <h3 className="pb-12">{welcome}</h3>
-      <div className="text-slate-500">
-        <Link href="terms">Terms and Conditions</Link>
-        <span className="px-4">•</span>
-        <Link href="privacy">Privacy Policy</Link>
+    <Main>
+      <Title text="Partner Portal" />
+      <div className="py-4">
+        <li>Monitor your crypto donations</li>
+        <li>Create funding initiatives</li>
+        <li>Update donors by creating impact NFTs</li>
+        <li>Add or change crypto-wallets</li>
       </div>
-      </Page>
-    </GoogleOAuthProvider>
+      <h3 className="pt-12 pb-2">{welcome}</h3>
+      {logged && (<LinkButton className="mb-12" text="GO TO DASHBOARD" href="/dashboard" />)}
+    </Main>
   )
 }
