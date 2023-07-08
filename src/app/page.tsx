@@ -37,7 +37,7 @@ export default function Page() {
         <li>Update donors by creating impact NFTs</li>
         <li>Add or change crypto-wallets</li>
       </div>
-      <h3 className="pt-12 pb-2">{welcome}</h3>
+      <h3 className="pt-12 pb-4">{welcome}</h3>
       {logged && (<LinkButton className="mb-12" text="GO TO DASHBOARD" href="/dashboard" />)}
     </Main>
   )
