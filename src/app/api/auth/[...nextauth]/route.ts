@@ -1,4 +1,4 @@
-import { NextApiRequest, NextApiResponse } from 'next/server'
+//import { NextApiRequest, NextApiResponse } from 'next/server'
 import NextAuth, { NextAuthOptions } from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
 //import FacebookProvider from "next-auth/providers/facebook"
@@ -6,14 +6,17 @@ import GoogleProvider from "next-auth/providers/google"
 //import TwitterProvider from "next-auth/providers/twitter"
 //import Auth0Provider from "next-auth/providers/auth0"
 
+const googleId = process.env.GOOGLE_CLIENT_ID || ''
+const googleSecret = process.env.GOOGLE_CLIENT_SECRET || ''
+
 // For more information on each option (and a full list of options) go to
 // https://next-auth.js.org/configuration/options
-export const authOptions: NextAuthOptions = {
+const authOptions: NextAuthOptions = {
   // https://next-auth.js.org/configuration/providers/oauth
   providers: [
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET
+      clientId: googleId,
+      clientSecret: googleSecret
     })
   /*
     Auth0Provider({
@@ -38,7 +41,7 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async jwt({ token }) {
-      console.log('JWT TOKEN', token)
+      //console.log('JWT TOKEN', token)
       //token.userRole = "admin"
       return token
     }

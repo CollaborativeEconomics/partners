@@ -1,7 +1,7 @@
 "use client"
 import { useEffect, useState } from 'react'
 import { useSession } from "next-auth/react"
-import Link from 'next/Link'
+import Link from 'next/link'
 import Main from '~/components/main'
 import Title from '~/components/title'
 import LinkButton from '~/components/linkbutton'
@@ -14,15 +14,15 @@ export default function Page() {
   const [logged, setLogged] = useState(false)
 
   function titleCase(str='') {
-    str = str.toLowerCase().split(' ')
-    for (var i = 0; i < str.length; i++) {
-      str[i] = str[i].charAt(0).toUpperCase() + str[i].slice(1)
+    const words = str.toLowerCase().split(' ')
+    for (var i = 0; i < words.length; i++) {
+      words[i] = words[i].charAt(0).toUpperCase() + words[i].slice(1)
     }
-    return str.join(' ')
+    return words.join(' ')
   }
 
   useEffect(()=>{
-    const name = session?.data?.user?.name
+    const name = session?.data?.user?.name ?? ''
     const welcomeText = 'Welcome '+titleCase(name)
     setWelcome(name ? welcomeText : loginText)
     setLogged(name ? true : false)

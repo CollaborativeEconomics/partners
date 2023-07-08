@@ -1,8 +1,12 @@
 import { NextResponse } from 'next/server'
+//import * as server from 'next/server'
 //import { redirect } from 'next/navigation'
 
 // api/test
-export async function GET(request: Request, context) {
+export async function GET(request: Request) {
+  //console.log('SERVER', server)
+  //const { searchParams } = new URL(request.url)
+  //const id = searchParams.get('id')
   //console.log('REQ', request)
   //console.log('URL', request.url)
   //console.log('MET', request.method)
