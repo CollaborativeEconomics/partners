@@ -33,7 +33,7 @@ const DonationsTable = ({ data }: TableProps) => {
               <td>{item.usdValue}</td>
             </tr>
           ))
-          : <tr><td colSpan={3} className="py-6">No donations received</td></tr>
+        : <tr><td colSpan={3} className="py-6">No donations received</td></tr>
         }
       </tbody>
       <tfoot>
