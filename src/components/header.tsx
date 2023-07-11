@@ -32,10 +32,7 @@ export default function Header() {
           {session?.user && (
             <>
               {session.user.image && (
-                <span
-                  style={{ backgroundImage: `url('${session.user.image}')` }}
-                  className={styles.avatar}
-                />
+                <span className={styles.avatar} style={{ backgroundImage: `url('${session.user.image}')` }} />
               )}
               <span className={styles.signedInText}>
                 <small>Signed in as</small>

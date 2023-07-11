@@ -5,7 +5,7 @@ import styles from "~/components/dashboard.module.css"
 export default function Page() {
   return (
     <div className={styles.intro}>
-      <Title text="DASHBOARD" />
+      <Title text="INITIATIVES" />
     </div>
   )
 }
