@@ -82,5 +82,11 @@ export const getEventById = (id: string) => fetchRegistry('events/'+id)
 export const getEventsByOrganization = (id: string) => fetchRegistry('events?orgid='+id)
 export const getEventsByInitiative = (id: string) => fetchRegistry('events?initid='+id)
 
+export const getDonations = (query: string) => fetchRegistry(`donations?`+query)
+export const getDonationsByOrganization = (orgid: string) => fetchRegistry(`donations?orgid=${orgid}`)
+export const getDonationsByOrganizationAndDate = (orgid: string, from: string, to: string) => fetchRegistry(`donations?orgid=${orgid}&from=${from}&to=${to}`)
+export const getDonationsByInitiative = (initid: string) => fetchRegistry(`donations?initid=${initid}`)
+export const getDonationsByInitiativeAndDate = (initid: string, from: string, to: string) => fetchRegistry(`donations?initid=${initid}&from=${from}&to=${to}`)
+
 
 // END

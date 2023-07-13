@@ -6,7 +6,7 @@ type Dictionary = { [key:string]:any }
 
 export async function apiFetch(query:string) {
   try {
-    let url = process.env.NEXTAUTH_URL+'/api/'+query
+    let url = process.env.NEXT_PUBLIC_SERVER_URL+'/api/'+query
     console.log('FETCH', url)
     let options = {
       method: 'GET',
@@ -24,7 +24,7 @@ export async function apiFetch(query:string) {
 
 export async function apiPost(query:string, data:Dictionary) {
   try {
-    let url = process.env.NEXTAUTH_URL+'/api/'+query
+    let url = process.env.NEXT_PUBLIC_SERVER_URL+'/api/'+query
     let body = JSON.stringify(data)
     console.log('POST', url)
     console.log('BODY', body)

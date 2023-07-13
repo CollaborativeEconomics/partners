@@ -1,21 +1,23 @@
-import { NextApiRequest, NextApiResponse } from 'next'
+import { getDonationsByOrganization } from 'utils/registry'
+import { getDonationsByOrganizationAndDate } from 'utils/registry'
+import { getDonationsByInitiative } from 'utils/registry'
+import { getDonationsByInitiativeAndDate } from 'utils/registry'
+
 
 // api/test
 export default async function test(req: NextApiRequest, res: NextApiResponse) {
-  //console.log('SERVER', server)
-  //const { searchParams } = new URL(request.url)
-  //const id = searchParams.get('id')
-  //console.log('REQ', request)
-  //console.log('URL', request.url)
-  //console.log('MET', request.method)
-  //console.log('HDR', request.headers)
-  //console.log('HDR', request.headers.get('host'))
-  //console.log('BOD', request.body)
-  //console.log('CTX', context)
-  //console.log('PRM', context.params)  // test/user/1234
-  //console.log('QRY', request.nextUrl.searchParams)
-  //console.log('QRY', request.nextUrl.searchParams.get('id'))  // test?id=123
-  //console.log('COK', request.cookies.get('g_state').value)
-  //redirect('https://nextjs.org/')
-  return res.json({success:true})
+  console.log('> api/test')
+  try {
+    const orgid = '636283c22552948fa675473c'
+    const initid = '6494f2513d6285419024c33a'
+    //const info = await getDonationsByOrganization(orgid)
+    //const info = await getDonationsByOrganizationAndDate(orgid, '2023-01-01', '2023-01-31')
+    //const info = await getDonationsByOrganizationAndDate(orgid, '2023-02-01', '2023-02-28')
+    //const info = await getDonationsByInitiative(initid)
+    const info = await getDonationsByInitiativeAndDate(initid, '2023-02-01', '2023-02-28')
+    res.status(200).setHeader("Content-Type", "text/plain").send(JSON.stringify(info||null,null,2))
+  } catch(ex) {
+    console.error(ex)
+    res.status(200).setHeader("Content-Type", "text/plain").send(ex.message)
+  }
 }

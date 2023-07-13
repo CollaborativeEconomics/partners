@@ -3,11 +3,17 @@ import styles from 'styles/dashboard.module.css'
 
 interface TimeTabProps {
   className?: string;
+  byYear: () => Promise<void>;
+  byMonth: () => Promise<void>;
+  byWeek: () => Promise<void>;
   selected?: number;
 }
 
 const TimeTab = ({
   className,
+  byYear,
+  byMonth,
+  byWeek,
   selected,
   ...rest
 }: TimeTabProps & HTMLProps<HTMLDivElement>) => {
@@ -29,18 +35,21 @@ const TimeTab = ({
     console.log('onYear')
     deselect()
     select(0)
+    byYear()
   }
 
   function onMonth() {
     console.log('onMonth')
     deselect()
     select(1)
+    byMonth()
   }
 
   function onWeek() {
     console.log('onWeek')
     deselect()
     select(2)
+    byWeek()
   }
 
   return (
