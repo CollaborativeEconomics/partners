@@ -26,7 +26,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
 function firstDayOfYear() {
   const year = new Date().getFullYear()
-  return new Date(year, 1, 1).toISOString().substr(0,10)
+  return new Date(year, 0, 1).toISOString().substr(0,10)
 }
 
 function firstDayOfMonth() {
