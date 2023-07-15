@@ -5,7 +5,7 @@ import styles from 'styles/header.module.css'
 export default function Header() {
   const { data: session, status } = useSession()
   const loading = status === 'loading'
-  console.log('SESSION', session)
+  //console.log('SESSION', session)
 
   return (
     <header className={styles.loginBox}>

@@ -14,7 +14,7 @@ const Sidebar = ({
 }: PropsWithChildren<PageProps>) => {
   const { data: session, status } = useSession()
   const loading = status === "loading"
-  console.log('SESSION', session)
+  //console.log('SESSION', session)
 
   return (
     <div className={styles.sidebar}>

@@ -9,7 +9,7 @@ import LinkButton from 'components/linkbutton'
 
 export default function Page() {
   const session = useSession()
-  console.log('SESSION?', session)
+  //console.log('SESSION?', session)
   const loginText = 'Log in with your Google account'
   const [welcome, setWelcome] = useState(loginText)
   const [logged, setLogged] = useState(false)

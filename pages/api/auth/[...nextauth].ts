@@ -5,6 +5,8 @@ import GoogleProvider from "next-auth/providers/google"
 //import GithubProvider from "next-auth/providers/github"
 //import TwitterProvider from "next-auth/providers/twitter"
 //import Auth0Provider from "next-auth/providers/auth0"
+//import Adapter from './adapter.ts' // TESTING
+import { getUserByEmail, getOrganizationByEmail } from 'utils/registry'
 
 const googleId = process.env.GOOGLE_CLIENT_ID || ''
 const googleSecret = process.env.GOOGLE_CLIENT_SECRET || ''
@@ -13,6 +15,7 @@ const googleSecret = process.env.GOOGLE_CLIENT_SECRET || ''
 // https://next-auth.js.org/configuration/options
 export const authOptions: NextAuthOptions = {
   // https://next-auth.js.org/configuration/providers/oauth
+  //adapter: Adapter(),
   providers: [
     GoogleProvider({
       clientId: googleId,
@@ -43,6 +46,20 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token }) {
       //console.log('JWT TOKEN', token)
       //token.userRole = "admin"
+      // TODO: RETHINK
+      if(token?.email){
+        const user = await getUserByEmail(token.email)
+        if(user && user.type==9){
+          //console.log('ADMIN!')
+          token.userRole = 'admin'
+          token.orgid = '636283c22552948fa675473c'
+        } else if(token.userRole!='admin'){
+          //console.log('NOT ADMIN!')
+          const org = await getOrganizationByEmail(token.email)
+          token.orgid = org?.id || ''
+        }
+      }
+      //console.log('JWT TOKEN', token)
       return token
     }
   }

@@ -1,8 +1,5 @@
-import { useEffect, useState } from 'react'
-import { getServerSession } from "next-auth/next"
-import { useSession } from "next-auth/react"
-import { authOptions } from "pages/api/auth/[...nextauth]"
-import type { GetServerSidePropsContext } from "next"
+import { useState } from 'react'
+import { getToken } from 'next-auth/jwt'
 import Dashboard from 'components/dashboard'
 import Sidebar from 'components/sidebar'
 import Title from 'components/title'
@@ -11,15 +8,12 @@ import TimeTab from 'components/timetab'
 import styles from 'styles/dashboard.module.css'
 import { apiFetch } from 'utils/api'
 
-export async function getServerSideProps(context: GetServerSidePropsContext) {
-  //console.log('Context', context)
-  //const { data: session, status } = useSession(context)
-  const session = await getServerSession(context.req, context.res, authOptions)
-  console.log('Session', session)
-  console.log('User', session?.user?.email)
-  // TODO: get org by email
-  let orgid = ''
-  if(!orgid){ orgid = '636283c22552948fa675473c' }
+type Dictionary = { [key:string]:any }
+
+export async function getServerSideProps({req,res}) {
+  const token:Dictionary = await getToken({ req })
+  const orgid = token?.orgid || ''
+  //if(!orgid){ orgid = '636283c22552948fa675473c' }
   const data = await getDonations(orgid)
   return {props: { data }}
 }
@@ -59,8 +53,6 @@ async function getDonations(orgid:string, from:string='', to:string='') {
   const data = info.result || []
   return data
 }
-
-type Dictionary = { [key:string]:any }
 
 interface Props {
   data?: Array<Dictionary>;

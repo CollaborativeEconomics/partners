@@ -43,6 +43,7 @@ const postRegistry = async (endpoint: string, body: Dictionary) => {
 export const newOrganization = (body: Dictionary) => postRegistry('organizations', body)
 export const getOrganizations = () => fetchRegistry('organizations')
 export const getOrganizationById = (id: string) => fetchRegistry(`organizations/${id}`)
+export const getOrganizationByEmail = (email: string) => fetchRegistry('organizations?email='+email)
 export const getOrganizationsByCategory = (categorySlug: string) => fetchRegistry(`organizations?category=${categorySlug}`)
 export const getOrganizationsByWallet = (walletAddress: string) => fetchRegistry(`organizations?wallet=${walletAddress}`)
 
@@ -71,6 +72,7 @@ export const getNFTsByOrganization = (id: string) => fetchRegistry(`nft?orgid=${
 export const newUser = (body: Dictionary) => postRegistry('users', body)
 export const getUsers = () => fetchRegistry('users')
 export const getUserByWallet = (wallet: string) => fetchRegistry('users?wallet='+wallet)
+export const getUserByEmail = (email: string) => fetchRegistry('users?email='+email)
 export const getUserById = (id: string) => fetchRegistry('users/'+id)
 export const updateUser = (id: string, body: Dictionary) => postRegistry('users/'+id, body)
 export const getUserWallets = () => fetchRegistry('userwallets')
