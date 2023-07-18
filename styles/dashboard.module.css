@@ -16,6 +16,32 @@
   background-color: #17191F; /*rgb(23 25 31)*/
 }
 
+.hbox {
+  display: flex;
+  flex-direction: row;
+  flex-grow: 1;
+  width: 100%;
+}
+
+.vbox {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  width: 100%;
+}
+
+.mainBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 720px;
+  margin: 0 auto 20px;
+  padding: 1.5rem;
+  background-color: #17191F;
+  border-radius: 10px;
+}
+
 .logoBox {
   display: flex;
   flex-direction: column;
@@ -37,17 +63,22 @@
 }
 
 .content {
-  display: block;
+  display: flex;
+  flex-direction: column;
   width: 100%;
   min-height: 100vh;
   max-height: 100vh;
   overflow: scroll;
+  padding: 20px;
 }
 
 .intro {
   display: flex;
   justify-content: center;
   align-items: center; 
+  width: 720px;
+  margin: 0 auto 20px;
+  color: #ddeeffaa;
 }
 
 .menu {
@@ -191,8 +222,9 @@
   border-radius: 10px;
 }
 
-.reportList { table-layout: fixed; width: 100%; max-width: 100%; border-collapse: collapse; font-size: 1.2em; font-family: monospace; }
-.reportList thead th { border-bottom: 3px double #ccc; }
+.reportList { table-layout: fixed; width: 100%; max-width: 100%; border-collapse: collapse; font-size: 1.2em; }
+.reportList thead th { border-bottom: none; padding-bottom: 20px; font-size: 1.2em; font-weight: normal; }
+.reportList tbody { font-family: monospace; }
 .reportList tbody td { border-bottom: 1px solid #444; }
 .reportList thead th:nth-child(1) { width: 25%; text-align: left; }
 .reportList thead th:nth-child(2) { width: 55%; text-align: left; }
@@ -200,7 +232,7 @@
 .reportList tbody td:nth-child(1) { width: 25%; }
 .reportList tbody td:nth-child(2) { width: 55%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .reportList tbody td:nth-child(3) { width: 20%; text-align: right; }
-.reportList tfoot td { border-top: 3px double #ccc; text-align: right; font-weight: bold; }
+.reportList tfoot td { padding-top: 20px; border-top: none; text-align: right; font-size: 1.2em; font-weight: normal; }
 
 
 .timeTab {
@@ -213,4 +245,37 @@
   margin: 0 20px;
   padding: 5px 20px;
   border-radius: 100px;
+}
+
+.inputLabel {
+  color: #ddeeffaa;
+}
+
+.inputText {
+  margin-bottom: 20px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  background-color: rgba(96, 104, 133, 0.22);
+}
+
+.inputArea {
+  background-color: rgba(96, 104, 133, 0.22);
+  border-radius: 8px;
+  height: 100px;
+}
+
+.submitBox {
+  display: flex;
+  flex-direction: row;
+  flex-grow: 1;
+  width: 100%;
+  justify-content: flex-end;
+  align-items: flex-end;
+  margin-top: 25px;
+  padding-top: 25px;
+  border-top: 1px solid #ddeeff11;
+}
+
+.submit {
+  margin: 0;
 }
