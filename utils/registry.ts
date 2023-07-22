@@ -46,6 +46,7 @@ export const getOrganizationById = (id: string) => fetchRegistry(`organizations/
 export const getOrganizationByEmail = (email: string) => fetchRegistry('organizations?email='+email)
 export const getOrganizationsByCategory = (categorySlug: string) => fetchRegistry(`organizations?category=${categorySlug}`)
 export const getOrganizationsByWallet = (walletAddress: string) => fetchRegistry(`organizations?wallet=${walletAddress}`)
+export const newOrganizationWallet = (orgid:string, body: Dictionary) => postRegistry('wallets?organizationid='+orgid, body)
 
 export const getCategories = () => fetchRegistry('categories')
 

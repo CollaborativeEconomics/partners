@@ -31,13 +31,13 @@ const Initiative = (item:InitiativeProps) => {
     hasCredit = true
   }
   return (
-    <div className="flex flex-row">
-      <Image src={item.defaultAsset} width={100} height={50} className="mr-6 rounded" alt={item.title}/>
+    <div className="flex flex-row justify-start w-full">
+      <Image src={item.defaultAsset} width={100} height={100} className="w-32 h-32 mr-6 rounded" alt={item.title}/>
       <div>
         <h1 className="text-2xl font-bold">{item.title}</h1>
-        <div className="text-slate-400">Start {toDate(item.start)} • End {toDate(item.end)}</div>
-        <h3 className="text-xl">{item.description}</h3>
-        { hasCredit ? <p>{creditText}</p> : '' }
+        <div className="text-slate-400 text-sm">Start {toDate(item.start)} • End {toDate(item.end)}</div>
+        <h3 className="text-base">{item.description}</h3>
+        { hasCredit ? <p className="text-green-500">{creditText}</p> : '' }
         {/*<Link href={'/partners/reports/initiatives?id='+item.id} className="text-slate-250">View donations &raquo;</Link>*/}
       </div>
     </div>

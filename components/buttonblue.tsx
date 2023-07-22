@@ -18,7 +18,7 @@ const ButtonBlue = React.forwardRef<HTMLButtonElement, ButtonBlueProps>(
   ) => (
     <button
       disabled={disabled}
-      className={`mx-auto px-12 py-2 rounded-full uppercase flex flex-row justify-center bg-blue-700 ${className}`}
+      className={`mx-auto my-4 px-12 py-2 rounded-full uppercase flex flex-row justify-center bg-blue-700 ${className}`}
       {...{ onClick, ref }}
       {...props}
     >

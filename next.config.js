@@ -7,6 +7,12 @@ const nextConfig = {
         hostname: 'give.staging.cfce.io',
         port: '',
         pathname: '/media/**'
+      },
+      {
+        protocol: 'https',
+        hostname: 'ipfs.filebase.io',
+        port: '',
+        pathname: '/ipfs/**'
       }
     ]
   }

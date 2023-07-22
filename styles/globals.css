@@ -40,6 +40,32 @@ h3 { font-size: 1.0em; }
   margin-left: auto;
 }
 
+label {
+  display: flex;
+  flex-direction: column;
+  line-height: 40px;
+  margin-bottom: 10px;
+}
+
+input,
+textarea,
+select {
+  min-height: 60px;
+  background-color: rgba(48, 82, 255, 0.06);
+  border-radius: 14px;
+  border: none;
+  padding: 5px 10px;
+  font-size: 17px;
+  /* color: #606885 */
+  background: rgba(96, 104, 133, 0.22);
+}
+
+textarea {
+  min-height: 120px;
+  line-height: 1.2em;
+}
+
+
 @media (min-width: 1536px){
   .container {
     max-width: 1536px;
