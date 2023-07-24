@@ -10,6 +10,12 @@ export default function Page() {
       <div className={styles.content}>
         <div className={styles.intro}>
           <Title text="DASHBOARD" />
+          <div className={styles.dashBox}>
+            <li>Monitor your crypto donations</li>
+            <li>Create funding initiatives</li>
+            <li>Update donors by creating impact NFTs</li>
+            <li>Add or change crypto-wallets</li>
+          </div>
         </div>
       </div>
     </Dashboard>

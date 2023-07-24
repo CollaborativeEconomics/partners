@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { getToken } from 'next-auth/jwt'
-import Image from 'next/image'
 import Dashboard from 'components/dashboard'
 import Sidebar from 'components/sidebar'
 import Title from 'components/title'
@@ -14,8 +13,8 @@ import Select from 'components/form/select'
 import ButtonBlue from 'components/buttonblue'
 import styles from 'styles/dashboard.module.css'
 import { getOrganizationById, getProviders } from 'utils/registry'
-import dateToPrisma from 'utils/dateToPrisma'
 import { randomString, randomNumber } from 'utils/random'
+import dateToPrisma from 'utils/dateToPrisma'
 
 type Dictionary = { [key:string]:any }
 
@@ -35,7 +34,7 @@ export async function getServerSideProps({req,res}) {
 }
 
 export default function Page({organization, providers}) {
-  const initiatives = organization.initiative
+  const initiatives = organization?.initiative || []
 
   function startDate() {
     return new Date().toJSON().substr(0, 10)
@@ -74,7 +73,6 @@ export default function Page({organization, providers}) {
     body.append('file', data.file)
     const resp = await fetch('/api/ipfs', { method: 'POST', body })
     const result = await resp.json()
-    //const result = {error:'Not ready'}
     return result
   }
 
@@ -190,7 +188,7 @@ export default function Page({organization, providers}) {
   }
 
   const ButtonState = { READY: 0, WAIT: 1, DONE: 2 }
-  const imgSource = '/media/upload.jpg'  // noimage.png
+  const imgSource = '/media/upload.jpg'
 
   function setButtonState(state) {
     switch (state) {
@@ -257,26 +255,6 @@ export default function Page({organization, providers}) {
         <Title text="Create a Funding Initiative" />
         <p className={styles.intro}>Creating an initiative allows donors to contribute to a specific campaign. This helps get your donors excited about the impact they can make, and helps them visualize how they’ll make the world a better place!</p>
         <div className={styles.mainBox}>
-
-{/*
-          <div className={styles.hbox}>
-            <Image src="/media/upload.jpg" className="rounded-lg mr-6" width={200} height={200} alt="Upload a picture" />
-            <div className={styles.vbox}>
-              <div className={styles.vbox}>
-                <label className={styles.inputLabel}>Title</label>
-                <input type="text" className={styles.inputText} />
-              </div>
-              <div className={styles.vbox}>
-                <label className={styles.inputLabel}>Description</label>
-                <textarea className={styles.inputArea} />
-              </div>
-            </div>
-          </div>
-          <div className={styles.submitBox}>
-            <ButtonBlue className={styles.submit} text="SUBMIT" />
-          </div>
-*/}
-
           <form className={styles.vbox}>
             <FileView
               id="imgFile"
