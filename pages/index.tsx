@@ -9,10 +9,11 @@ import LinkButton from 'components/linkbutton'
 
 export default function Page() {
   const session = useSession()
-  //console.log('SESSION?', session)
+  console.log('SESSION?', session)
   const loginText = 'Log in with your Google account'
   const [welcome, setWelcome] = useState(loginText)
   const [logged, setLogged] = useState(false)
+  const [authed, setAuthed] = useState(false)
 
   function titleCase(str='') {
     const words = str.toLowerCase().split(' ')
@@ -23,10 +24,14 @@ export default function Page() {
   }
 
   useEffect(()=>{
-    const name = session?.data?.user?.name ?? ''
-    const welcomeText = 'Welcome '+titleCase(name)
+    var _session: any = session // stupid hack as some keys are not part of the object
+    const name  = _session?.data?.user?.name ?? ''
+    const orgid = _session?.data?.orgid ?? ''
+    var welcomeText = 'Welcome '+titleCase(name)
+    if(!orgid) { welcomeText = 'You are not authorized, request access to the portal' }
     setWelcome(name ? welcomeText : loginText)
-    setLogged(name ? true : false)
+    setLogged(name  ? true : false)
+    setAuthed(orgid ? true : false)
   },[session])
   
   return (
@@ -41,7 +46,7 @@ export default function Page() {
           <li>Add or change crypto-wallets</li>
         </div>
         <h3 className="pt-12 pb-4">{welcome}</h3>
-        {logged && (<LinkButton className="mb-12" text="GO TO DASHBOARD" href="/dashboard/donations" />)}
+        {logged && authed && (<LinkButton className="mb-12" text="GO TO DASHBOARD" href="/dashboard/donations" />)}
       </Main>
       <Footer />
     </>

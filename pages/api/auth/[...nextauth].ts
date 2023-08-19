@@ -43,7 +43,7 @@ export const authOptions: NextAuthOptions = {
   */
   ],
   callbacks: {
-    async jwt({ token }) {
+    async jwt({ token, account }) {
       //console.log('JWT TOKEN', token)
       //token.userRole = "admin"
       // TODO: RETHINK
@@ -59,8 +59,15 @@ export const authOptions: NextAuthOptions = {
           token.orgid = org?.id || ''
         }
       }
-      //console.log('JWT TOKEN', token)
+      //console.log('JWT TOKEN', token, account)
       return token
+    },
+    async session({ session, token, user }) {
+      // Send properties to the client, like an access_token from a provider.
+      //session.jti = token.jti
+      (session as any).orgid = token.orgid
+      //console.log('SES TOKEN', session, token, user)
+      return session
     }
   }
 }
