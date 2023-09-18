@@ -28,7 +28,7 @@ const Checkbox = ({
   return (
     <label
       htmlFor={name}
-      className="rounded-full bg-white/10 flex w-fit flex-row align-middle justify-start text-white px-4 py-1 mb-6"
+      className="rounded-xl bg-blue-100 flex w-fit flex-row align-middle justify-start text-white px-4 py-1 mb-6"
     >
       <span className="material-icons mr-2 self-center">
         {checked ? 'check_box' : 'check_box_outline_blank'}

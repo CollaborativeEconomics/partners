@@ -47,11 +47,13 @@ export const getOrganizationByEmail = (email: string) => fetchRegistry('organiza
 export const getOrganizationsByCategory = (categorySlug: string) => fetchRegistry(`organizations?category=${categorySlug}`)
 export const getOrganizationsByWallet = (walletAddress: string) => fetchRegistry(`organizations?wallet=${walletAddress}`)
 export const newOrganizationWallet = (orgid:string, body: Dictionary) => postRegistry('wallets?organizationid='+orgid, body)
+export const getFeaturedOrganization = () => fetchRegistry(`organizations?featured=true`)
 
 export const getCategories = () => fetchRegistry('categories')
 
 export const newInitiative = (body: Dictionary) => postRegistry('initiatives', body)
 export const getInitiativeById = (id: string) => fetchRegistry(`initiatives/${id}`)
+export const getInitiativeByTag = (tag: string) => fetchRegistry(`initiatives?tag=${tag}`)
 export const getInitiatives = () => fetchRegistry('initiatives')
 export const getInitiativesByOrganization = (id: string) => fetchRegistry(`initiatives?orgid=${id}`)
 
@@ -67,6 +69,8 @@ export const getCreditsByProvider = (id: string) => fetchRegistry(`credits?provi
 
 export const createNFT = (body: Dictionary) => postRegistry('nft', body)
 export const getAllNFTs = (id: string) => fetchRegistry(`nft`)
+export const getNFTbyId = (id: string) => fetchRegistry(`nft?id=${id}`)
+export const getNFTbyTokenId = (id: string) => fetchRegistry(`nft?tokenid=${id}`)
 export const getNFTsByAccount = (id: string) => fetchRegistry(`nft?userid=${id}`)
 export const getNFTsByOrganization = (id: string) => fetchRegistry(`nft?orgid=${id}`)
 
@@ -84,6 +88,7 @@ export const getEvents = () => fetchRegistry('events')
 export const getEventById = (id: string) => fetchRegistry('events/'+id)
 export const getEventsByOrganization = (id: string) => fetchRegistry('events?orgid='+id)
 export const getEventsByInitiative = (id: string) => fetchRegistry('events?initid='+id)
+export const updateEvent = (id: string, body: Dictionary) => postRegistry('events/'+id, body)
 
 export const getDonations = (query: string) => fetchRegistry(`donations?`+query)
 export const getDonationsByOrganization = (orgid: string) => fetchRegistry(`donations?orgid=${orgid}`)

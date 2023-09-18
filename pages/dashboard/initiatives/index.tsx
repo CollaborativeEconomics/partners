@@ -10,6 +10,7 @@ import TextInput from 'components/form/textinput'
 import TextArea from 'components/form/textarea'
 import FileView from 'components/form/fileview'
 import Select from 'components/form/select'
+import Checkbox from 'components/form/checkbox'
 import ButtonBlue from 'components/buttonblue'
 import styles from 'styles/dashboard.module.css'
 import { getOrganizationById, getProviders } from 'utils/registry'
@@ -177,6 +178,9 @@ export default function Page({organization, providers}) {
         if (data.creditType !== '0') {
           saveCredit(data, result.id)
         }
+        if(data.yesNFT){
+          // TODO: Save initiative 1155 collection
+        }
         showMessage('Initiative saved')
         setButtonState(ButtonState.DONE)
       }
@@ -221,7 +225,8 @@ export default function Page({organization, providers}) {
       creditDesc: '',
       creditAmount: '',
       provider: '',
-      image: ''
+      image: '',
+      yesNFT: true
     }
   })
   const [
@@ -233,7 +238,8 @@ export default function Page({organization, providers}) {
     creditDesc,
     creditAmount,
     provider,
-    image
+    image,
+    yesNFT
   ] = watch([
     'title',
     'desc',
@@ -243,7 +249,8 @@ export default function Page({organization, providers}) {
     'creditDesc',
     'creditAmount',
     'provider',
-    'image'
+    'image',
+    'yesNFT'
   ])
 
   console.log('creditType', creditType)
@@ -297,6 +304,7 @@ export default function Page({organization, providers}) {
                 <TextInput label="Amount to offset one credit" register={register('creditAmount')} />
               </div>
             )}
+            <Checkbox label="Mint Impact NFT" register={register('yesNFT')} check={true} />
           </form>
 
           <ButtonBlue
@@ -313,7 +321,8 @@ export default function Page({organization, providers}) {
                 creditDesc,
                 creditAmount,
                 provider,
-                image
+                image,
+                yesNFT
               })
             }
           />

@@ -10,6 +10,7 @@ import TextInput from 'components/form/textinput'
 import TextArea from 'components/form/textarea'
 import FileView from 'components/form/fileview'
 import Select from 'components/form/select'
+import Checkbox from 'components/form/checkbox'
 import ButtonBlue from 'components/buttonblue'
 import styles from 'styles/dashboard.module.css'
 import { getOrganizationById, getEventsByOrganization } from 'utils/registry'
@@ -60,7 +61,7 @@ export default function Page({organization, events}) {
 
   async function onSubmit(data) {
     console.log('SUBMIT', data)
-    // TODO: Validate data
+    // Validate data
     if (!data.name) {
       showMessage('Title is required')
       return
@@ -137,6 +138,19 @@ export default function Page({organization, events}) {
         events.push(result.data)
         setChange(change+1)
         showMessage('Event info saved')
+        if(data.yesNFT){
+          showMessage('Event info saved, minting NFT...')
+          const eventid = result.data.id
+          console.log('Minting NFT for event', eventid)
+          const resMint = await fetch('/api/mint?eventid='+eventid)
+          const okNft = await resMint.json()
+          console.log('RESULT', okNft)
+          if(okNft?.error){
+            showMessage('Event saved, error minting NFT')
+          } else {
+            showMessage('Event saved, NFT minted')
+          }
+        }
         setButtonState(ButtonState.DONE)
       }
     } catch (ex) {
@@ -175,19 +189,22 @@ export default function Page({organization, events}) {
       initiativeId: initiatives[0].id || '',
       name: '',
       desc: '',
-      image: ''
+      image: '',
+      yesNFT: true
     }
   })
   const [
     initiativeId,
     name,
     desc,
-    image
+    image,
+    yesNFT
   ] = watch([
     'initiativeId',
     'name',
     'desc',
-    'image'
+    'image',
+    'yesNFT'
   ])
 
   // Used to refresh list of events after new record added
@@ -217,6 +234,7 @@ export default function Page({organization, events}) {
             />
             <TextInput label="Title" register={register('name')} />
             <TextArea label="Description" register={register('desc')} />
+            <Checkbox label="Mint Impact NFT" register={register('yesNFT')} check={true} />
           </form>
           <ButtonBlue
             id="buttonSubmit"
@@ -227,7 +245,8 @@ export default function Page({organization, events}) {
                 initiativeId,
                 name,
                 desc,
-                image
+                image,
+                yesNFT
               })
             }
           />
