@@ -59,41 +59,10 @@ export default async function Mint(req: NextApiRequest, res: NextApiResponse) {
       return res.status(500).json({ error: 'Error minting NFT' })
     }
 
-    // Save Event to Prisma
-/*
-    const data = {
-      created: new Date(),
-      name: 
-      description:
-      amount: 0
-      image:
-      organizationId:
-      initiativeId:
-      tokenId: 
-      metadata:
-    }
-    console.log('NftData', data)
-    const saved = await createNFT(data)
-    console.log('Saved', saved?.success)
-    if (saved.success) {
-      console.log('NFT saved in DB!')
-    } else {
-      console.error('Error saving NFT in DB!')
-    }
-*/
-
-/*
     // Update Event to Prisma
     const data = {
-      created: new Date(),
-      name: 
-      description:
-      amount: 0
-      image:
-      organizationId:
-      initiativeId:
-      tokenId: 
-      metadata:
+      tokenId: tokenId,
+      metadata: uriMeta
     }
     console.log('Event', data)
     const saved = await updateEvent(event.id, data)
@@ -103,7 +72,7 @@ export default async function Mint(req: NextApiRequest, res: NextApiResponse) {
     } else {
       console.error('Error updating event in DB!')
     }
-*/
+
     // Success
     console.log('Minting completed')
     console.log('RESULT', {

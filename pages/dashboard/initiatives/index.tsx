@@ -178,9 +178,9 @@ export default function Page({organization, providers}) {
         if (data.creditType !== '0') {
           saveCredit(data, result.id)
         }
-        if(data.yesNFT){
+        //if(data.yesNFT){
           // TODO: Save initiative 1155 collection
-        }
+        //}
         showMessage('Initiative saved')
         setButtonState(ButtonState.DONE)
       }
@@ -225,8 +225,7 @@ export default function Page({organization, providers}) {
       creditDesc: '',
       creditAmount: '',
       provider: '',
-      image: '',
-      yesNFT: true
+      image: ''
     }
   })
   const [
@@ -238,8 +237,7 @@ export default function Page({organization, providers}) {
     creditDesc,
     creditAmount,
     provider,
-    image,
-    yesNFT
+    image
   ] = watch([
     'title',
     'desc',
@@ -249,8 +247,7 @@ export default function Page({organization, providers}) {
     'creditDesc',
     'creditAmount',
     'provider',
-    'image',
-    'yesNFT'
+    'image'
   ])
 
   console.log('creditType', creditType)
@@ -304,7 +301,7 @@ export default function Page({organization, providers}) {
                 <TextInput label="Amount to offset one credit" register={register('creditAmount')} />
               </div>
             )}
-            <Checkbox label="Mint Impact NFT" register={register('yesNFT')} check={true} />
+            {/*<Checkbox label="Mint Impact NFT" register={register('yesNFT')} check={true} />*/}
           </form>
 
           <ButtonBlue
@@ -321,8 +318,7 @@ export default function Page({organization, providers}) {
                 creditDesc,
                 creditAmount,
                 provider,
-                image,
-                yesNFT
+                image
               })
             }
           />
