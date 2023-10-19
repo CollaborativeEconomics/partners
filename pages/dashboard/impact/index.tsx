@@ -59,7 +59,16 @@ export default function Page({organization, events}) {
     return result
   }
 
+  function clearForm() {
+    setButtonState(ButtonState.READY)
+    showMessage('Enter story info and upload image')
+  }
+
   async function onSubmit(data) {
+    if(buttonText=='DONE'){
+      clearForm()
+      return
+    }
     console.log('SUBMIT', data)
     // Validate data
     if (!data.name) {
@@ -175,18 +184,19 @@ export default function Page({organization, events}) {
         break
       case ButtonState.DONE:
         setButtonText('DONE')
-        setButtonDisabled(true)
+        setButtonDisabled(false)
         break
     }
   }
 
+  const initId = initiatives?.length>0 ? initiatives[0].id : ''
   const [buttonDisabled, setButtonDisabled] = useState(false)
   const [buttonText, setButtonText] = useState('SUBMIT')
   const [message, showMessage] = useState('Enter story info and upload image')
   const [change, setChange] = useState(0)
   const { register, watch } = useForm({
     defaultValues: {
-      initiativeId: initiatives[0].id || '',
+      initiativeId: initId,
       name: '',
       desc: '',
       image: '',

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { getToken } from 'next-auth/jwt'
+import { useSession } from 'next-auth/react'
 import Dashboard from 'components/dashboard'
 import Sidebar from 'components/sidebar'
 import Title from 'components/title'
@@ -60,9 +61,12 @@ interface Props {
 
 export default function Page(props:Props) {
   //console.log('PROPS', props)
+  const { data: session } = useSession()
   const [data, setData] = useState(props.data)
-  let orgid = '' // TODO: get from user profile
-  if(!orgid){ orgid = '636283c22552948fa675473c' }
+  const orgid   = session?.orgid ?? ''
+  //const orgname = session.orgname
+  console.log('ORGID', orgid)
+  //if(!orgid){ orgid = '636283c22552948fa675473c' }
 
   async function byYear() {
     const from = firstDayOfYear()

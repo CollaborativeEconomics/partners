@@ -48,15 +48,20 @@ export const authOptions: NextAuthOptions = {
       //token.userRole = "admin"
       // TODO: RETHINK
       if(token?.email){
-        const user = await getUserByEmail(token.email)
-        if(user && user.type==9){
-          //console.log('ADMIN!')
-          token.userRole = 'admin'
-          token.orgid = '636283c22552948fa675473c'
-        } else if(token.userRole!='admin'){
-          //console.log('NOT ADMIN!')
-          const org = await getOrganizationByEmail(token.email)
-          token.orgid = org?.id || ''
+        const org = await getOrganizationByEmail(token.email)
+        token.orgid = org?.id || ''
+        token.orgname = org?.name || ''
+        if(!org || org?.error){
+          const user = await getUserByEmail(token.email)
+          if(user && user.type==9) {
+            //console.log('ADMIN!')
+            token.orgid = '636283c22552948fa675473c'
+            token.orgname = 'Admin'
+            token.userRole = 'admin'
+          } else if(token.userRole!='admin') {
+            //console.log('NOT ADMIN!')
+            token.orgname = 'User'
+          }
         }
       }
       //console.log('JWT TOKEN', token, account)
@@ -65,7 +70,8 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token, user }) {
       // Send properties to the client, like an access_token from a provider.
       //session.jti = token.jti
-      (session as any).orgid = token.orgid
+      session.orgid   = (token?.orgid as string) ?? ''
+      session.orgname = (token?.orgname as string) ?? ''
       //console.log('SES TOKEN', session, token, user)
       return session
     }

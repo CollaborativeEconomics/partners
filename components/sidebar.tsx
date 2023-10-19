@@ -55,9 +55,9 @@ const Sidebar = ({
                   />
                 )}
                 <span className={styles.signedInText}>
-                  <small>Signed in as</small>
+                  <strong>{session.orgname ?? ''}</strong>
                   <br />
-                  <strong>{session.user.email ?? session.user.name}</strong>
+                  <small>{session.user.email ?? session.user.name}</small>
                 </span>
                 <a
                   href={`/api/auth/signout`}

@@ -26,9 +26,19 @@ export default function Page({organization}) {
   
   function listChains() {
     return [
-      { id: 'XRPL',     name: 'Ripple - XRPL' },
-      { id: 'Stellar',  name: 'Stellar - XLM' },
-      { id: 'Binance',  name: 'Binance - BNB' }
+      { id: 'Avalanche',   name: 'Avalanche - AVAX' },
+      { id: 'Binance',     name: 'Binance - BNB' },
+      { id: 'Celo',        name: 'Celo - CELO' },
+      { id: 'EOS',         name: 'EOS - EOS' },
+      { id: 'Ethereum',    name: 'Ethereum - ETH' },
+      { id: 'Filecoin',    name: 'Filecoin - FIL' },
+      { id: 'Flare',       name: 'Flare - FLR' },
+      { id: 'Optimism',    name: 'Optimism - OP' },
+      { id: 'Polygon',     name: 'Polygon - MATIC' },
+      { id: 'PublicGoods', name: 'PublicGoods - PGN' },
+      { id: 'XRPL',        name: 'Ripple - XRP' },
+      { id: 'Stellar',     name: 'Stellar - XLM' },
+      { id: 'XinFin',      name: 'XinFin - XDC' }
     ]
   }
 
