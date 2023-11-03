@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
 import { useForm } from 'react-hook-form'
 import { getToken } from 'next-auth/jwt'
 import Dashboard from 'components/dashboard'
@@ -13,12 +14,13 @@ import Select from 'components/form/select'
 import Checkbox from 'components/form/checkbox'
 import ButtonBlue from 'components/buttonblue'
 import styles from 'styles/dashboard.module.css'
-import { getOrganizationById, getEventsByOrganization } from 'utils/registry'
+//import { getOrganizationById, getEventsByOrganization } from 'utils/registry'
 import { randomString, randomNumber } from 'utils/random'
 import dateToPrisma from 'utils/dateToPrisma'
+import { apiFetch } from 'utils/api'
 
 type Dictionary = { [key:string]:any }
-
+/*
 export async function getServerSideProps({req,res}) {
   const token:Dictionary = await getToken({ req })
   const orgid = token?.orgid || ''
@@ -34,9 +36,30 @@ export async function getServerSideProps({req,res}) {
   const events = await getEventsByOrganization(orgid)
   return { props: { organization, events } }
 }
+*/
 
-export default function Page({organization, events}) {
-  const initiatives = organization?.initiative || [{id:'0', title:'No initiatives'}]
+//export default function Page({organization, events}) {
+export default function Page() {
+  //const orgid = organization?.id || ''
+  //const initiatives = organization?.initiative || [{id:'0', title:'No initiatives'}]
+  const { data: session, update } = useSession()
+  const [orgid, setOrgid] = useState(session?.orgid || '')
+  const [initiatives, setInitiatives] = useState([])
+  const [events, setEvents] = useState([])
+
+  useEffect(()=>{
+    async function loadData(){
+      const oid = session?.orgid ?? ''
+      const org = await apiFetch('organization?id='+oid) || {}
+      console.log('ORG:', org)
+      const evt = await apiFetch('events?id='+oid) || []
+      console.log('EVT:', evt)
+      setOrgid(oid)
+      setInitiatives(org?.initiative || [])
+      setEvents(evt || [])
+    }
+    loadData()
+  },[update])
 
   function listInitiatives() {
     if (!initiatives) {
@@ -111,7 +134,7 @@ export default function Page({organization, events}) {
       description: data.desc,
       amount: 0,
       image: '',
-      organizationId: organization.id,
+      organizationId: orgid,
       initiativeId: initiativeId
     }
     try {
@@ -221,6 +244,10 @@ export default function Page({organization, events}) {
   useEffect(()=>{
     console.log('Events changed!', change)
   },[change])
+
+  async function onOrgChange(id) {
+    console.log('ORG CHAGED', orgid, 'to', id)
+  }
 
   return (
     <Dashboard>

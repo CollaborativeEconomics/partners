@@ -43,7 +43,7 @@ export const authOptions: NextAuthOptions = {
   */
   ],
   callbacks: {
-    async jwt({ token, account }) {
+    async jwt({ token, account, trigger, session }) {
       //console.log('JWT TOKEN', token)
       //token.userRole = "admin"
       // TODO: RETHINK
@@ -55,7 +55,12 @@ export const authOptions: NextAuthOptions = {
           const user = await getUserByEmail(token.email)
           if(user && user.type==9) {
             //console.log('ADMIN!')
-            token.orgid = '636283c22552948fa675473c'
+            if (trigger === "update" && session?.orgid) {
+              console.log('TOKEN UPDATE', session)
+              token.orgid = session.orgid
+            } else {
+              token.orgid = '636283c22552948fa675473c' // Test environmental
+            }
             token.orgname = 'Admin'
             token.userRole = 'admin'
           } else if(token.userRole!='admin') {
@@ -67,11 +72,17 @@ export const authOptions: NextAuthOptions = {
       //console.log('JWT TOKEN', token, account)
       return token
     },
-    async session({ session, token, user }) {
+    async session({ session, token, user, trigger, newSession }) {
       // Send properties to the client, like an access_token from a provider.
       //session.jti = token.jti
-      session.orgid   = (token?.orgid as string) ?? ''
+      if (trigger === "update" && newSession?.orgid) {
+        console.log('SESSION UPDATE', newSession)
+        session.orgid = newSession.orgid
+      } else {
+        session.orgid = (token?.orgid as string) ?? ''
+      }
       session.orgname = (token?.orgname as string) ?? ''
+      session.isadmin = (token?.userRole == 'admin')
       //console.log('SES TOKEN', session, token, user)
       return session
     }

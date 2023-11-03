@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { PropsWithChildren } from 'react'
 import { signIn, signOut, useSession } from 'next-auth/react'
 import Link from 'next/link'
@@ -6,15 +7,30 @@ import styles from 'styles/dashboard.module.css'
 
 interface PageProps {
   className?: string
+  afterChange?: Function
 }
 
 const Sidebar = ({
   className,
-  children
+  children,
+  afterChange = (id)=>{}
 }: PropsWithChildren<PageProps>) => {
-  const { data: session, status } = useSession()
+  const { data: session, status, update } = useSession()
   const loading = status === "loading"
-  //console.log('SESSION', session)
+  console.log('SIDEBAR SESSION', session)
+  const [orgs, setOrgs] = useState([])
+
+  useEffect(() => {
+    async function loadData(){
+      const data = await fetch('/api/organizations')
+      const info = await data.json()
+      console.log('ORGS', info)
+      if(info.success){
+        setOrgs(info.result)
+      }
+    }
+    loadData()
+   }, [])
 
   return (
     <div className={styles.sidebar}>
@@ -23,6 +39,24 @@ const Sidebar = ({
           <Image src="/give-logo.svg" alt="Give Logo" className={styles.logoImage} width={200} height={60} />
         </Link>
       </div>
+      {session?.isadmin && (
+        <div className="">
+          <select className="my-4 mx-2" value={session?.orgid} onChange={
+            (evt)=>{
+              const orgid = evt.target.value
+              console.log('Changed', orgid)
+              update({'orgid':orgid})
+              afterChange(orgid)
+            }
+          }>
+            { orgs ? orgs.map((item) => (
+              <option value={item.id} key={item.id}>{item.name}</option>
+            )) : (
+              <option>No organizations...</option>
+            )}
+          </select>
+        </div>
+      )}
       <nav className={styles.menu}>
         <li className={styles.menuItem}><Link href="/dashboard/donations">Donations</Link></li>
         <li className={styles.menuItem}><Link href="/dashboard/initiatives">Initiatives</Link></li>

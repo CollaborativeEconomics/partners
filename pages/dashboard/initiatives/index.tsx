@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import { useSession } from 'next-auth/react'
 import { getToken } from 'next-auth/jwt'
 import Dashboard from 'components/dashboard'
 import Sidebar from 'components/sidebar'
@@ -13,12 +14,14 @@ import Select from 'components/form/select'
 import Checkbox from 'components/form/checkbox'
 import ButtonBlue from 'components/buttonblue'
 import styles from 'styles/dashboard.module.css'
-import { getOrganizationById, getProviders } from 'utils/registry'
+//import { getOrganizationById, getProviders } from 'utils/registry'
 import { randomString, randomNumber } from 'utils/random'
 import dateToPrisma from 'utils/dateToPrisma'
+import { apiFetch } from 'utils/api'
 
 type Dictionary = { [key:string]:any }
 
+/*
 export async function getServerSideProps({req,res}) {
   const token:Dictionary = await getToken({ req })
   const orgid = token?.orgid || ''
@@ -33,9 +36,31 @@ export async function getServerSideProps({req,res}) {
   //console.log('org', organization)
   return { props: { organization, providers } }
 }
+*/
 
-export default function Page({organization, providers}) {
-  const initiatives = organization?.initiative || []
+//export default function Page({organization, providers}) {
+export default function Page() {
+  const { data: session, update } = useSession()
+  //const orgid = organization?.id || ''
+  //const initiatives = organization?.initiative || []
+  const [initiatives, setInitiatives] = useState([])
+  const [providers, setProviders] = useState([])
+  const [orgid, setOrgid] = useState(session?.orgid || '')
+
+  useEffect(()=>{
+    async function loadData(){
+      const oid = session?.orgid ?? ''
+      console.log('GET ORG:', oid)
+      const org = await apiFetch('organization?id='+oid) || {}
+      console.log('ORG:', org)
+      const prv = await apiFetch('providers') || []
+      console.log('PRV:', prv)
+      setOrgid(oid)
+      setInitiatives(org?.initiative || [])
+      setProviders(prv || [])
+    }
+    loadData()
+  },[update])
 
   function startDate() {
     return new Date().toJSON().substr(0, 10)
@@ -142,7 +167,7 @@ export default function Page({organization, providers}) {
       start: dateToPrisma(data.inidate),
       end: dateToPrisma(data.enddate),
       defaultAsset: '',
-      organizationId: organization.id,
+      organizationId: orgid,
       tag: parseInt(randomNumber(8))
     }
     try {
@@ -251,6 +276,10 @@ export default function Page({organization, providers}) {
   ])
 
   console.log('creditType', creditType)
+
+  async function onOrgChange(id) {
+    console.log('ORG CHAGED', orgid, 'to', id)
+  }
 
   return (
     <Dashboard>

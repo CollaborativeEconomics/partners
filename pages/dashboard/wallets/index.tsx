@@ -21,8 +21,8 @@ export async function getServerSideProps({req,res}) {
 }
 
 export default function Page({organization}) {
-  const orgid = organization.id || ''
-  var wallets = organization.wallets || []
+  const orgid = organization?.id || ''
+  var wallets = organization?.wallets || []
   
   function listChains() {
     return [

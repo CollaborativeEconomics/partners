@@ -1,9 +1,15 @@
 import Dashboard from 'components/dashboard'
 import Sidebar from 'components/sidebar'
 import Title from 'components/title'
+//import {getOrganizations} from 'utils/registry'
 import styles from "styles/dashboard.module.css"
 
-export default function Page() {
+//export async function getServerSideProps({req,res}) {
+//  const orgs = await getOrganizations()
+//  return {props: { orgs }}
+//}
+
+export default function Page({orgs}) {
   return (
     <Dashboard>
       <Sidebar />

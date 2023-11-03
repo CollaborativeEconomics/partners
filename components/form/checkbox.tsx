@@ -21,7 +21,7 @@ const Checkbox = ({
   register: { onChange, name, ...register },
   ...rest
 }: CheckboxProps & HTMLProps<HTMLInputElement>) => {
-  console.log({ rest });
+  //console.log({ rest });
   const [checked, setChecked] = useState(check);
   // const event = useRef(null);
 

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { getToken } from 'next-auth/jwt'
 import { useSession } from 'next-auth/react'
 import Dashboard from 'components/dashboard'
@@ -11,13 +11,16 @@ import { apiFetch } from 'utils/api'
 
 type Dictionary = { [key:string]:any }
 
+/*
 export async function getServerSideProps({req,res}) {
   const token:Dictionary = await getToken({ req })
+  console.log('TOKEN', token)
   const orgid = token?.orgid || ''
   //if(!orgid){ orgid = '636283c22552948fa675473c' }
   const data = await getDonations(orgid)
   return {props: { data }}
 }
+*/
 
 function firstDayOfYear() {
   const year = new Date().getFullYear()
@@ -47,7 +50,7 @@ async function getDonations(orgid:string, from:string='', to:string='') {
   if(!to){ to = tomorrow() }
   console.log('Donations', orgid, from, to)
   const info = await apiFetch(`donations?orgid=${orgid}&from=${from}&to=${to}`) ?? null
-  console.log('INFO', info.result.length)
+  console.log('INFO', info?.result?.length)
   if(!info || info.error){
     return []
   }
@@ -61,12 +64,29 @@ interface Props {
 
 export default function Page(props:Props) {
   //console.log('PROPS', props)
-  const { data: session } = useSession()
-  const [data, setData] = useState(props.data)
-  const orgid   = session?.orgid ?? ''
+  const { data: session, update } = useSession()
+  //console.log('DASH SESSION', session)
+  const [data, setData] = useState([])
+  const [orgid, setOrgid] = useState(session?.orgid || '')
   //const orgname = session.orgname
-  console.log('ORGID', orgid)
+  //console.log('DASH ORGID', orgid)
+  //console.log('DASH ORGIS', session?.orgid)
+  //const oid = session?.orgid
+  //setOrgid(session?.orgid)
   //if(!orgid){ orgid = '636283c22552948fa675473c' }
+
+  useEffect(()=>{
+    async function loadData(){
+      const orid = session?.orgid ?? ''
+      console.log('GET DONATIONS:', orid)
+      const list = await getDonations(orid)
+      console.log('DONATIONS:', list)
+      setData(list)
+      setOrgid(orid)
+      console.log('LAST ORGID:', orid)
+    }
+    loadData()
+  },[update])
 
   async function byYear() {
     const from = firstDayOfYear()
@@ -89,9 +109,13 @@ export default function Page(props:Props) {
     setData(recs)
   }
 
+  async function onOrgChange(id) {
+    console.log('ORG CHAGED', orgid, 'to', id)
+  }
+
   return (
     <Dashboard>
-      <Sidebar />
+      <Sidebar afterChange={onOrgChange} />
       <div className={styles.content}>
         <div className={styles.report}>
           <div className={styles.reportHead}>
