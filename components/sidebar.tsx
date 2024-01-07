@@ -40,7 +40,7 @@ const Sidebar = ({
         </Link>
       </div>
       {session?.isadmin && (
-        <div className="">
+        <div>
           <select className="my-4 mx-2" value={session?.orgid} onChange={
             (evt)=>{
               const orgid = evt.target.value
@@ -58,6 +58,7 @@ const Sidebar = ({
         </div>
       )}
       <nav className={styles.menu}>
+        <li className={styles.menuItem}><Link href="/dashboard/organization">New Organization</Link></li>
         <li className={styles.menuItem}><Link href="/dashboard/donations">Donations</Link></li>
         <li className={styles.menuItem}><Link href="/dashboard/initiatives">Initiatives</Link></li>
         <li className={styles.menuItem}><Link href="/dashboard/impact">Impact NFTs</Link></li>
