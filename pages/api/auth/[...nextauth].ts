@@ -59,7 +59,7 @@ export const authOptions: NextAuthOptions = {
               console.log('TOKEN UPDATE', session)
               token.orgid = session.orgid
             } else {
-              token.orgid = '636283c22552948fa675473c' // Test environmental
+              token.orgid = 'dcf20b3e-3bf6-4f24-a3f5-71c2dfd0f46c' // Test environmental
             }
             token.orgname = 'Admin'
             token.userRole = 'admin'

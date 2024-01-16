@@ -11,8 +11,8 @@ import { getOrganizationById } from 'utils/registry'
 export default async function test(req: NextApiRequest, res: NextApiResponse) {
   console.log('> api/test')
   try {
-    const orgid = '636283c22552948fa675473c'
-    const initid = '6494f2513d6285419024c33a'
+    const orgid = '066509a2-c40d-4f8b-863a-574a39a9953f'
+    const initid = '1b773d96-b641-4c7d-a874-afda7f9742f0'
     const info = await getOrganizationById(orgid)
     //const info = await getDonationsByOrganization(orgid)
     //const info = await getDonationsByOrganizationAndDate(orgid, '2023-01-01', '2023-01-31')

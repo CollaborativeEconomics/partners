@@ -1,8 +1,10 @@
 import { NextApiRequest, NextApiResponse } from 'next'
-import { newEvent } from 'utils/registry'
+import { addStoryPics } from 'utils/registry'
 
-export default async function addEvent(req: NextApiRequest, res: NextApiResponse) {
-  const { method, body } = req
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  const { method, body, query } = req
+  const storyid = query?.id.toString()
+  console.log('STID', storyid)
   console.log('BODY', body)
 
   try {
@@ -10,7 +12,7 @@ export default async function addEvent(req: NextApiRequest, res: NextApiResponse
       res.status(405).send(JSON.stringify({error:'Method not allowed'}))
     } else if (method === 'POST') {
       //res.status(501).send(JSON.stringify({error:'Not ready'}))
-      const result = await newEvent(body)
+      const result = await addStoryPics(storyid, body)
       console.log('RESULT', result)
       res.status(200).send(JSON.stringify(result))
     } else {

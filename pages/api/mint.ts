@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import Xinfin from 'chains/xinfin'
 import ipfsUpload from 'utils/upload-ipfs'
-import { getEventById, updateEvent } from 'utils/registry'
+import { getStoryById, updateStory } from 'utils/registry'
 
 export default async function Mint(req: NextApiRequest, res: NextApiResponse) {
   console.log('API MINTING NFT1155...')
@@ -18,7 +18,7 @@ export default async function Mint(req: NextApiRequest, res: NextApiResponse) {
     const created = new Date().toJSON().replace('T', ' ').substring(0, 19)
 
     // Get event info
-    let event = await getEventById(eventid.toString())
+    let event = await getStoryById(eventid.toString())
     console.log('EVENT', event)
     if(!event) {
       return res.status(500).json({ error: 'Event not found' })
@@ -52,7 +52,7 @@ export default async function Mint(req: NextApiRequest, res: NextApiResponse) {
     // Mint NFT
     const contract = process.env.XINFIN_NFT1155_CONTRACT
     const address = process.env.XINFIN_MINTER_WALLET // Minter gets all impact nfts
-    const tokenId = '0x'+event.id
+    const tokenId = '0x'+event.id.replaceAll('-','')
     const okMint = await Xinfin.mintNFT1155(contract, address, tokenId, uriMeta)
     console.log('Mint result', okMint)
     if (!okMint || okMint?.error) {
@@ -65,7 +65,7 @@ export default async function Mint(req: NextApiRequest, res: NextApiResponse) {
       metadata: uriMeta
     }
     console.log('Event', data)
-    const saved = await updateEvent(event.id, data)
+    const saved = await updateStory(event.id, data)
     console.log('Saved', saved?.success)
     if (saved.success) {
       console.log('Event saved in DB!')

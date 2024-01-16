@@ -8,6 +8,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     if (method === 'GET') {
       const id = req?.query?.id?.toString()
+      console.log('ORGID', id)
       const data = await getOrganizationById(id)
       return res.json({...data})
     } else if (method === 'POST') {

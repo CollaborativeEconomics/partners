@@ -14,7 +14,7 @@ import Select from 'components/form/select'
 import Checkbox from 'components/form/checkbox'
 import ButtonBlue from 'components/buttonblue'
 import styles from 'styles/dashboard.module.css'
-//import { getOrganizationById, getEventsByOrganization } from 'utils/registry'
+//import { getOrganizationById, getStoriesByOrganization } from 'utils/registry'
 import { randomString, randomNumber } from 'utils/random'
 import dateToPrisma from 'utils/dateToPrisma'
 import { apiFetch } from 'utils/api'
@@ -33,12 +33,28 @@ export async function getServerSideProps({req,res}) {
   }
   console.log('OrgID', organization.id)
   //console.log('org', organization)
-  const events = await getEventsByOrganization(orgid)
+  const events = await getStoriesByOrganization(orgid)
   return { props: { organization, events } }
 }
 */
 
-//export default function Page({organization, events}) {
+function getExtension(mime){
+  let ext = ''
+  switch (mime) {
+    case 'image/jpg':
+    case 'image/jpeg':
+      ext = '.jpg'
+      break
+    case 'image/png':
+      ext = '.png'
+      break
+    case 'image/webp':
+      ext = '.webp'
+      break
+  }
+  return ext
+}
+
 export default function Page() {
   //const orgid = organization?.id || ''
   //const initiatives = organization?.initiative || [{id:'0', title:'No initiatives'}]
@@ -51,12 +67,17 @@ export default function Page() {
     async function loadData(){
       const oid = session?.orgid ?? ''
       const org = await apiFetch('organization?id='+oid) || {}
+      const ini = org?.initiative || []
+      const iid = org?.initiative?.length > 0 ? org?.initiative[0].id : ''
+      const evt = await apiFetch('stories?id='+oid) || []
       console.log('ORG:', org)
-      const evt = await apiFetch('events?id='+oid) || []
+      console.log('INI:', ini)
+      console.log('IID:', iid)
       console.log('EVT:', evt)
       setOrgid(oid)
-      setInitiatives(org?.initiative || [])
-      setEvents(evt || [])
+      setInitId(iid)
+      setInitiatives(ini)
+      setEvents(evt)
     }
     loadData()
   },[update])
@@ -73,6 +94,7 @@ export default function Page() {
   }
 
   async function saveImage(data) {
+    if(!data?.file){ return {error:'no image provided'} }
     console.log('IMAGE', data)
     const body = new FormData()
     body.append('name', data.name)
@@ -93,6 +115,8 @@ export default function Page() {
       return
     }
     console.log('SUBMIT', data)
+    console.log('INITID', initId)
+    //return
     // Validate data
     if (!data.name) {
       showMessage('Title is required')
@@ -102,32 +126,37 @@ export default function Page() {
       showMessage('Description is required')
       return
     }
-    if (!data.image){
+    if (!data.image1){
       showMessage('Image is required')
       return
     }
-    const file = data.image[0]
-    let ext = ''
-    switch (file.type) {
-      case 'image/jpg':
-      case 'image/jpeg':
-        ext = '.jpg'
-        break
-      case 'image/png':
-        ext = '.png'
-        break
-      case 'image/webp':
-        ext = '.webp'
-        break
-    }
-    if (!ext) {
-      showMessage('Only JPG, PNG and WEBP images are allowed')
+    if (!data.initiativeId){
+      showMessage('Initiative is required')
       return
     }
-    const image = {
-      name: randomString() + ext,
-      file: file
-    }
+    const file1 = data.image1[0]
+    const file2 = data.image2 ? data.image2[0] : null
+    const file3 = data.image3 ? data.image3[0] : null
+    const file4 = data.image4 ? data.image4[0] : null
+    const file5 = data.image5 ? data.image5[0] : null
+    let ext1 = getExtension(file1?.type)
+    let ext2 = getExtension(file2?.type)
+    let ext3 = getExtension(file3?.type)
+    let ext4 = getExtension(file4?.type)
+    let ext5 = getExtension(file5?.type)
+    if (file1 && !ext1) { showMessage('Only JPG, PNG and WEBP images are allowed'); return }
+    if (file2 && !ext2) { showMessage('Only JPG, PNG and WEBP images are allowed'); return }
+    if (file3 && !ext3) { showMessage('Only JPG, PNG and WEBP images are allowed'); return }
+    if (file4 && !ext4) { showMessage('Only JPG, PNG and WEBP images are allowed'); return }
+    if (file5 && !ext5) { showMessage('Only JPG, PNG and WEBP images are allowed'); return }
+    
+    const imgName = randomString()
+    const image1 = { name: imgName+'1' + ext1, file: file1 }
+    const image2 = { name: imgName+'2' + ext2, file: file2 }
+    const image3 = { name: imgName+'3' + ext3, file: file3 }
+    const image4 = { name: imgName+'4' + ext4, file: file4 }
+    const image5 = { name: imgName+'5' + ext5, file: file5 }
+
     const record = {
       created: dateToPrisma(new Date()),
       name: data.name,
@@ -135,44 +164,65 @@ export default function Page() {
       amount: 0,
       image: '',
       organizationId: orgid,
-      initiativeId: initiativeId
+      initiativeId: data.initiativeId
     }
     try {
       showMessage('Saving image...')
       setButtonState(ButtonState.WAIT)
-      const resimg = await saveImage(image)
-      console.log('RESIMG', resimg)
-      if (resimg.error) {
-        showMessage('Error saving image: ' + resimg.error)
+      const resimg1 = await saveImage(image1)
+      const resimg2 = await saveImage(image2)
+      const resimg3 = await saveImage(image3)
+      const resimg4 = await saveImage(image4)
+      const resimg5 = await saveImage(image5)
+      console.log('RESIMG1', resimg1)
+      console.log('RESIMG2', resimg2)
+      console.log('RESIMG3', resimg3)
+      console.log('RESIMG4', resimg4)
+      console.log('RESIMG5', resimg5)
+      if (resimg1.error) {
+        showMessage('Error saving image: ' + resimg1.error)
         setButtonState(ButtonState.READY)
         return
       }
-      if (typeof resimg?.uri === "string") {
-        record.image = resimg.uri
-      }
+      if (typeof resimg1?.uri === "string") { record.image = resimg1.uri } // Main image
+      const storypics = [] // more images to storypics table
+      if (typeof resimg2?.uri === "string") { storypics.push(resimg2.uri) }
+      if (typeof resimg3?.uri === "string") { storypics.push(resimg3.uri) }
+      if (typeof resimg4?.uri === "string") { storypics.push(resimg4.uri) }
+      if (typeof resimg5?.uri === "string") { storypics.push(resimg5.uri) }
       console.log('REC', record)
+      console.log('PIX', storypics)
       showMessage('Saving info to database...')
-      const opts = {
+      const opts1 = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json; charset=utf8' },
-        body:JSON.stringify(record)
+        body: JSON.stringify(record)
       }
-      const resp = await fetch('/api/event', opts)
-      const result = await resp.json()
-      console.log('RESULT', result)
-      if (result.error) {
-        showMessage('Error saving event: ' + result.error)
+      const resp1 = await fetch('/api/story', opts1)
+      const result1 = await resp1.json()
+      console.log('RESULT1', result1)
+      if (result1.error) {
+        showMessage('Error saving event: ' + result1.error)
         setButtonState(ButtonState.READY)
-      } else if (typeof result?.success == 'boolean' && !result.success) {
+      } else if (typeof result1?.success == 'boolean' && !result1.success) {
         showMessage('Error saving event: unknown')
         setButtonState(ButtonState.READY)
       } else {
-        events.push(result.data)
+        const storyid = result1.data.id
+        const opts2 = {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json; charset=utf8' },
+          body: JSON.stringify({images:storypics})
+        }
+        const resp2 = await fetch('/api/storypics?id='+storyid, opts2)
+        const result2 = await resp2.json()
+        console.log('RESULT2', result2)
+        events.push(result1.data)
         setChange(change+1)
         showMessage('Event info saved')
         if(data.yesNFT){
           showMessage('Event info saved, minting NFT...')
-          const eventid = result.data.id
+          const eventid = result1.data.id
           console.log('Minting NFT for event', eventid)
           const resMint = await fetch('/api/mint?eventid='+eventid)
           const okNft = await resMint.json()
@@ -212,17 +262,23 @@ export default function Page() {
     }
   }
 
-  const initId = initiatives?.length>0 ? initiatives[0].id : ''
+  const iid = initiatives?.length>0 ? initiatives[0].id : ''
+  const [initId, setInitId] = useState(iid)
+  console.log('INITID:', initId)
   const [buttonDisabled, setButtonDisabled] = useState(false)
   const [buttonText, setButtonText] = useState('SUBMIT')
   const [message, showMessage] = useState('Enter story info and upload image')
   const [change, setChange] = useState(0)
   const { register, watch } = useForm({
     defaultValues: {
-      initiativeId: initId,
+      initiativeId: '',
       name: '',
       desc: '',
-      image: '',
+      image1: '',
+      image2: '',
+      image3: '',
+      image4: '',
+      image5: '',
       yesNFT: true
     }
   })
@@ -230,13 +286,21 @@ export default function Page() {
     initiativeId,
     name,
     desc,
-    image,
+    image1,
+    image2,
+    image3,
+    image4,
+    image5,
     yesNFT
   ] = watch([
     'initiativeId',
     'name',
     'desc',
-    'image',
+    'image1',
+    'image2',
+    'image3',
+    'image4',
+    'image5',
     'yesNFT'
   ])
 
@@ -246,7 +310,7 @@ export default function Page() {
   },[change])
 
   async function onOrgChange(id) {
-    console.log('ORG CHAGED', orgid, 'to', id)
+    console.log('ORG CHANGED', orgid, 'to', id)
   }
 
   return (
@@ -258,12 +322,42 @@ export default function Page() {
         <div className={styles.mainBox}>
           <form className={styles.vbox}>
             <FileView
-              id="imgFile"
-              register={register('image')}
+              id="image1"
+              register={register('image1')}
               source={imgSource}
               width={250}
               height={250}
             />
+            <div className={styles.hbox + ' justify-center'}>
+              <FileView
+                id="image2"
+                register={register('image2')}
+                source={imgSource}
+                width={128}
+                height={128}
+              />
+              <FileView
+                id="image3"
+                register={register('image3')}
+                source={imgSource}
+                width={128}
+                height={128}
+              />
+              <FileView
+                id="image4"
+                register={register('image4')}
+                source={imgSource}
+                width={128}
+                height={128}
+              />
+              <FileView
+                id="image5"
+                register={register('image5')}
+                source={imgSource}
+                width={128}
+                height={128}
+              />
+            </div>
             <Select
               label="Initiative"
               register={register('initiativeId')}
@@ -282,7 +376,11 @@ export default function Page() {
                 initiativeId,
                 name,
                 desc,
-                image,
+                image1,
+                image2,
+                image3,
+                image4,
+                image5,
                 yesNFT
               })
             }
