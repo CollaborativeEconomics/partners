@@ -185,13 +185,13 @@ export default function Page() {
         return
       }
       if (typeof resimg1?.uri === "string") { record.image = resimg1.uri } // Main image
-      const storypics = [] // more images to storypics table
-      if (typeof resimg2?.uri === "string") { storypics.push(resimg2.uri) }
-      if (typeof resimg3?.uri === "string") { storypics.push(resimg3.uri) }
-      if (typeof resimg4?.uri === "string") { storypics.push(resimg4.uri) }
-      if (typeof resimg5?.uri === "string") { storypics.push(resimg5.uri) }
+      const storymedia = [] // more images to storymedia table
+      if (typeof resimg2?.uri === "string") { storymedia.push(resimg2.uri) }
+      if (typeof resimg3?.uri === "string") { storymedia.push(resimg3.uri) }
+      if (typeof resimg4?.uri === "string") { storymedia.push(resimg4.uri) }
+      if (typeof resimg5?.uri === "string") { storymedia.push(resimg5.uri) }
       console.log('REC', record)
-      console.log('PIX', storypics)
+      console.log('PIX', storymedia)
       showMessage('Saving info to database...')
       const opts1 = {
         method: 'POST',
@@ -212,9 +212,9 @@ export default function Page() {
         const opts2 = {
           method: 'POST',
           headers: { 'Content-Type': 'application/json; charset=utf8' },
-          body: JSON.stringify({images:storypics})
+          body: JSON.stringify({media:storymedia})
         }
-        const resp2 = await fetch('/api/storypics?id='+storyid, opts2)
+        const resp2 = await fetch('/api/storymedia?id='+storyid, opts2)
         const result2 = await resp2.json()
         console.log('RESULT2', result2)
         events.push(result1.data)

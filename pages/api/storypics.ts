@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next'
-import { addStoryPics } from 'utils/registry'
+import { addStoryMedia } from 'utils/registry'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { method, body, query } = req
@@ -12,7 +12,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       res.status(405).send(JSON.stringify({error:'Method not allowed'}))
     } else if (method === 'POST') {
       //res.status(501).send(JSON.stringify({error:'Not ready'}))
-      const result = await addStoryPics(storyid, body)
+      const result = await addStoryMedia(storyid, body)
       console.log('RESULT', result)
       res.status(200).send(JSON.stringify(result))
     } else {
