@@ -25,7 +25,7 @@ export const config = { matcher: [
   '/admin', 
   '/dashboard',
   '/dashboard/donations',
-  '/dashboard/impact',
+  '/dashboard/stories',
   '/dashboard/initiatives',
   '/dashboard/wallets'
 ] }

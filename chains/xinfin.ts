@@ -22,7 +22,7 @@ class XinfinServer {
     name: 'Xinfin Mainnet',
     symbol: 'XDC',
     decimals: 18,
-    gasprice: '250000000',
+    gasprice: '12500000000',
     explorer: 'https://explorer.xinfin.network',
     rpcurl: 'https://rpc.xinfin.network',
     wssurl: ''
@@ -32,7 +32,7 @@ class XinfinServer {
     name: 'Xinfin Testnet',
     symbol: 'XDC',
     decimals: 18,
-    gasprice: '250000000',
+    gasprice: '12500000000',
     explorer: 'https://explorer.apothem.network',
     rpcurl: 'https://rpc.apothem.network',
     wssurl: ''
@@ -134,19 +134,21 @@ class XinfinServer {
     console.log('NONCE', nonce)
     const data = instance.methods.safeMint(address, uri).encodeABI()
     console.log('DATA', data)
-    const gasPrice = await this.fetchLedger('eth_gasPrice', [])
-    console.log('GAS', parseInt(gasPrice,16), gasPrice)
-    const checkGas = await this.fetchLedger('eth_estimateGas', [{from:minter, to:contract, data}])
-    console.log('EST', parseInt(checkGas,16), checkGas)
-    const gas = { gasPrice: this.provider.gasprice, gasLimit: 275000 }
+    const resPrice = await this.fetchLedger('eth_gasPrice', [])
+    const gasPrice = parseInt(resPrice,16)
+    console.log('GAS', gasPrice, resPrice)
+    const resLimit = await this.fetchLedger('eth_estimateGas', [{from:minter, to:contract, data}])
+    console.log('EST', parseInt(resLimit,16), resLimit)
+    const gasLimit = Math.floor(parseInt(resLimit,16) * 1.20)
+    console.log('LIMIT', gasLimit)
 
     const tx = {
       from: minter, // minter wallet
       to: contract, // contract address
       value: '0',   // this is the value in wei to send
       data: data,   // encoded method and params
-      gas: gas.gasLimit,
-      gasPrice: gas.gasPrice,
+      gas: gasLimit,
+      gasPrice,
       nonce
     }
     console.log('TX', tx)
@@ -191,7 +193,10 @@ class XinfinServer {
     console.log('GAS', parseInt(gasPrice,16), gasPrice)
     const checkGas = await this.fetchLedger('eth_estimateGas', [{from:minter, to:contract, data}])
     console.log('EST', parseInt(checkGas,16), checkGas)
-    const gas = { gasPrice: this.provider.gasprice, gasLimit: 275000 }
+    const gasLimit = Math.floor(parseInt(checkGas,16) * 1.20)
+    console.log('LIMIT', gasLimit)
+    //const gas = { gasPrice: this.provider.gasprice, gasLimit: 275000 }
+    const gas = { gasPrice, gasLimit }
 
     const tx = {
       from: minter, // minter wallet

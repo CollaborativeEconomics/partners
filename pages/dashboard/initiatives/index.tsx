@@ -330,7 +330,7 @@ export default function Page() {
                 <TextInput label="Amount to offset one credit" register={register('creditAmount')} />
               </div>
             )}
-            {/*<Checkbox label="Mint Impact NFT" register={register('yesNFT')} check={true} />*/}
+            {/*<Checkbox label="Mint Story NFT" register={register('yesNFT')} check={true} />*/}
           </form>
 
           <ButtonBlue

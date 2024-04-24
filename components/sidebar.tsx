@@ -40,8 +40,8 @@ const Sidebar = ({
         </Link>
       </div>
       {session?.isadmin && (
-        <div>
-          <select className="my-4 mx-2" value={session?.orgid} onChange={
+        <div className="w-full box-border">
+          <select className="my-4 w-full box-border" value={session?.orgid} onChange={
             (evt)=>{
               const orgid = evt.target.value
               console.log('Changed', orgid)
@@ -61,7 +61,7 @@ const Sidebar = ({
         <li className={styles.menuItem}><Link href="/dashboard/organization">New Organization</Link></li>
         <li className={styles.menuItem}><Link href="/dashboard/donations">Donations</Link></li>
         <li className={styles.menuItem}><Link href="/dashboard/initiatives">Initiatives</Link></li>
-        <li className={styles.menuItem}><Link href="/dashboard/impact">Impact NFTs</Link></li>
+        <li className={styles.menuItem}><Link href="/dashboard/stories">Story Certs</Link></li>
         <li className={styles.menuItem}><Link href="/dashboard/wallets">Wallets</Link></li>
       </nav>
       <div className={styles.loginBox}>

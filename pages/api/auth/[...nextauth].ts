@@ -53,6 +53,7 @@ export const authOptions: NextAuthOptions = {
         token.orgname = org?.name || ''
         if(!org || org?.error){
           const user = await getUserByEmail(token.email)
+          console.log('USER', user)
           if(user && user.type==9) {
             //console.log('ADMIN!')
             if (trigger === "update" && session?.orgid) {

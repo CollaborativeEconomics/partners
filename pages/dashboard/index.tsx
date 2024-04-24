@@ -19,7 +19,7 @@ export default function Page({orgs}) {
           <div className={styles.dashBox}>
             <li>Monitor your crypto donations</li>
             <li>Create funding initiatives</li>
-            <li>Update donors by creating impact NFTs</li>
+            <li>Update donors by creating Story NFTs</li>
             <li>Add or change crypto-wallets</li>
           </div>
         </div>

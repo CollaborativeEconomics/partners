@@ -27,7 +27,7 @@ export default async function Mint(req: NextApiRequest, res: NextApiResponse) {
     // Save metadata
     const metadata = {
       mintedBy: 'CFCE via Give',
-      title: 'Impact NFT',
+      title: 'Story NFT',
       created: created,
       organization: event.organization?.name,
       initiative: event.initiative?.title,
@@ -51,7 +51,7 @@ export default async function Mint(req: NextApiRequest, res: NextApiResponse) {
 
     // Mint NFT
     const contract = process.env.XINFIN_NFT1155_CONTRACT
-    const address = process.env.XINFIN_MINTER_WALLET // Minter gets all impact nfts
+    const address = process.env.XINFIN_MINTER_WALLET // Minter gets all story nfts
     const tokenId = '0x'+event.id.replaceAll('-','')
     const okMint = await Xinfin.mintNFT1155(contract, address, tokenId, uriMeta)
     console.log('Mint result', okMint)

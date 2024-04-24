@@ -110,7 +110,7 @@ export default function Page(props:Props) {
   }
 
   async function onOrgChange(id) {
-    console.log('ORG CHAGED', orgid, 'to', id)
+    console.log('ORG CHANGED', orgid, 'to', id)
   }
 
   return (

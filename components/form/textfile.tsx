@@ -21,7 +21,7 @@ const TextFile = forwardRef(
   ) => (
     <label className={`m-0 mt-4 ${className ?? ''}`}>
       <span className="text-slate-300 text-sm text-left uppercase">{label}</span>
-      <input type="file" id={id} ref={ref} {...props} {...register} />
+      <input type="file" id={id} ref={ref} {...props} {...register} className="file:rounded-lg" />
     </label>
   )
 );

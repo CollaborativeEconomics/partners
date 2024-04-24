@@ -24,8 +24,8 @@ export default async function UploadHandler(req:NextApiRequest, res:NextApiRespo
     //const orig = file.originalFilename
     //const size = file.size
     console.log('Uploading', name, path, mime)
-    const bytes = await fs.readFileSync(path)
-    await fs.unlinkSync(path)
+    const bytes = fs.readFileSync(path)
+    fs.unlinkSync(path)
 
     // awsUpload
     //const resp = await fileUpload(name, bytes, mime)

@@ -7,6 +7,7 @@ import Sidebar from 'components/sidebar'
 import Title from 'components/title'
 import Event from 'components/event'
 import Label from 'components/form/label'
+import TextFile from 'components/form/textfile'
 import TextInput from 'components/form/textinput'
 import TextArea from 'components/form/textarea'
 import FileView from 'components/form/fileview'
@@ -38,7 +39,7 @@ export async function getServerSideProps({req,res}) {
 }
 */
 
-function getExtension(mime){
+function getImageExtension(mime){
   let ext = ''
   switch (mime) {
     case 'image/jpg':
@@ -55,6 +56,29 @@ function getExtension(mime){
   return ext
 }
 
+function getMediaExtension(mime){
+  let ext = ''
+  switch (mime) {
+    case 'application/pdf':
+      ext = '.pdf'
+      break
+    case 'audio/mpeg':
+    case 'audio/mp3':
+      ext = '.mp3'
+      break
+    case 'video/mp4':
+      ext = '.mp4'
+      break
+    case 'video/mpeg':
+      ext = '.mpeg'
+      break
+    case 'video/webm':
+      ext = '.webm'
+      break
+  }
+  return ext
+}
+
 export default function Page() {
   //const orgid = organization?.id || ''
   //const initiatives = organization?.initiative || [{id:'0', title:'No initiatives'}]
@@ -62,6 +86,7 @@ export default function Page() {
   const [orgid, setOrgid] = useState(session?.orgid || '')
   const [initiatives, setInitiatives] = useState([])
   const [events, setEvents] = useState([])
+  const [categories, setCategories] = useState([])
 
   useEffect(()=>{
     async function loadData(){
@@ -70,27 +95,42 @@ export default function Page() {
       const ini = org?.initiative || []
       const iid = org?.initiative?.length > 0 ? org?.initiative[0].id : ''
       const evt = await apiFetch('stories?id='+oid) || []
-      console.log('ORG:', org)
-      console.log('INI:', ini)
-      console.log('IID:', iid)
-      console.log('EVT:', evt)
+      const cat = await apiFetch('categories') || []
+      //console.log('ORG:', org)
+      //console.log('INI:', ini)
+      //console.log('IID:', iid)
+      //console.log('EVT:', evt)
+      console.log('CAT:', cat.length)
       setOrgid(oid)
       setInitId(iid)
       setInitiatives(ini)
       setEvents(evt)
+      setCategories(cat)
     }
     loadData()
   },[update])
 
   function listInitiatives() {
     if (!initiatives) {
-      return [{ id: 0, name: 'No initiatives' }]
+      return [{ id: 'null', name: 'No initiatives' }]
     }
     const list = []
     for (let i = 0; i < initiatives.length; i++) {
       list.push({ id: initiatives[i].id, name: initiatives[i].title })
     }
     return list
+  }
+
+  function listCategories() {
+    if (!categories) {
+      return [{ id: 'null', name: 'No categories' }]
+    }
+    const list = [{id:'null', name:' None'}]
+    for (let i = 0; i < categories.length; i++) {
+      list.push({ id: categories[i].id, name: categories[i].title })
+    }
+    const olist = list.sort((a,b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0))
+    return olist
   }
 
   async function saveImage(data) {
@@ -100,6 +140,18 @@ export default function Page() {
     body.append('name', data.name)
     body.append('file', data.file)
     const resp = await fetch('/api/ipfs', { method: 'POST', body })
+    const result = await resp.json()
+    return result
+  }
+
+  async function saveMedia(data) {
+    if(!data?.file){ return {error:'no media provided'} }
+    console.log('MEDIA', data)
+    const body = new FormData()
+    body.append('name', data.name)
+    body.append('file', data.file)
+    body.append('folder', 'media') // put all media files here (pdf, audio, video) except images
+    const resp = await fetch('/api/upload', { method: 'POST', body })
     const result = await resp.json()
     return result
   }
@@ -139,16 +191,19 @@ export default function Page() {
     const file3 = data.image3 ? data.image3[0] : null
     const file4 = data.image4 ? data.image4[0] : null
     const file5 = data.image5 ? data.image5[0] : null
-    let ext1 = getExtension(file1?.type)
-    let ext2 = getExtension(file2?.type)
-    let ext3 = getExtension(file3?.type)
-    let ext4 = getExtension(file4?.type)
-    let ext5 = getExtension(file5?.type)
+    const fileM = data.media  ? data.media[0]  : null
+    let ext1 = getImageExtension(file1?.type)
+    let ext2 = getImageExtension(file2?.type)
+    let ext3 = getImageExtension(file3?.type)
+    let ext4 = getImageExtension(file4?.type)
+    let ext5 = getImageExtension(file5?.type)
+    let extM = getMediaExtension(fileM?.type)
     if (file1 && !ext1) { showMessage('Only JPG, PNG and WEBP images are allowed'); return }
     if (file2 && !ext2) { showMessage('Only JPG, PNG and WEBP images are allowed'); return }
     if (file3 && !ext3) { showMessage('Only JPG, PNG and WEBP images are allowed'); return }
     if (file4 && !ext4) { showMessage('Only JPG, PNG and WEBP images are allowed'); return }
     if (file5 && !ext5) { showMessage('Only JPG, PNG and WEBP images are allowed'); return }
+    if (fileM && !extM) { showMessage('Only PDF, MP3, MP4 and WEBM media is allowed'); return }
     
     const imgName = randomString()
     const image1 = { name: imgName+'1' + ext1, file: file1 }
@@ -156,6 +211,7 @@ export default function Page() {
     const image3 = { name: imgName+'3' + ext3, file: file3 }
     const image4 = { name: imgName+'4' + ext4, file: file4 }
     const image5 = { name: imgName+'5' + ext5, file: file5 }
+    const media  = { name: imgName+'M' + extM, file: fileM }
 
     const record = {
       created: dateToPrisma(new Date()),
@@ -164,7 +220,8 @@ export default function Page() {
       amount: 0,
       image: '',
       organizationId: orgid,
-      initiativeId: data.initiativeId
+      initiativeId: data.initiativeId,
+      categoryId: data.categoryId
     }
     try {
       showMessage('Saving image...')
@@ -174,11 +231,13 @@ export default function Page() {
       const resimg3 = await saveImage(image3)
       const resimg4 = await saveImage(image4)
       const resimg5 = await saveImage(image5)
+      const resmed  = await saveMedia(media)
       console.log('RESIMG1', resimg1)
       console.log('RESIMG2', resimg2)
       console.log('RESIMG3', resimg3)
       console.log('RESIMG4', resimg4)
       console.log('RESIMG5', resimg5)
+      console.log('RESMEDIA', resmed)
       if (resimg1.error) {
         showMessage('Error saving image: ' + resimg1.error)
         setButtonState(ButtonState.READY)
@@ -186,10 +245,11 @@ export default function Page() {
       }
       if (typeof resimg1?.uri === "string") { record.image = resimg1.uri } // Main image
       const storymedia = [] // more images to storymedia table
-      if (typeof resimg2?.uri === "string") { storymedia.push(resimg2.uri) }
-      if (typeof resimg3?.uri === "string") { storymedia.push(resimg3.uri) }
-      if (typeof resimg4?.uri === "string") { storymedia.push(resimg4.uri) }
-      if (typeof resimg5?.uri === "string") { storymedia.push(resimg5.uri) }
+      if (typeof resimg2?.uri === "string") { storymedia.push({media:resimg2.uri, mime:file2?.type}) }
+      if (typeof resimg3?.uri === "string") { storymedia.push({media:resimg3.uri, mime:file3?.type}) }
+      if (typeof resimg4?.uri === "string") { storymedia.push({media:resimg4.uri, mime:file4?.type}) }
+      if (typeof resimg5?.uri === "string") { storymedia.push({media:resimg5.uri, mime:file5?.type}) }
+      if (typeof resmed?.result?.url  === "string") { storymedia.push({media:resmed.result.url,  mime:fileM?.type}) }
       console.log('REC', record)
       console.log('PIX', storymedia)
       showMessage('Saving info to database...')
@@ -279,7 +339,9 @@ export default function Page() {
       image3: '',
       image4: '',
       image5: '',
-      yesNFT: true
+      media: '',
+      yesNFT: true,
+      categoryId: ''
     }
   })
   const [
@@ -291,7 +353,9 @@ export default function Page() {
     image3,
     image4,
     image5,
-    yesNFT
+    media,
+    yesNFT,
+    categoryId
   ] = watch([
     'initiativeId',
     'name',
@@ -301,7 +365,9 @@ export default function Page() {
     'image3',
     'image4',
     'image5',
-    'yesNFT'
+    'media',
+    'yesNFT',
+    'categoryId'
   ])
 
   // Used to refresh list of events after new record added
@@ -317,8 +383,8 @@ export default function Page() {
     <Dashboard>
       <Sidebar />
       <div className={styles.content}>
-        <Title text="Share a Story: Post an Impact NFT" />
-        <p className={styles.intro}>Impact NFTs allow you to share your donors what their donations are contributing to. Tell a story that will attract new donations and make your donors feel good about supporting you!</p>
+        <Title text="Share a Story: Post a Story NFT" />
+        <p className={styles.intro}>Story NFTs allow you to share your donors what their donations are contributing to. Tell a story that will attract new donations and make your donors feel good about supporting you!</p>
         <div className={styles.mainBox}>
           <form className={styles.vbox}>
             <FileView
@@ -358,14 +424,22 @@ export default function Page() {
                 height={128}
               />
             </div>
+            <div>
+              <TextFile label="Other media like audio, video, pdf" register={register('media')} />
+            </div>
             <Select
               label="Initiative"
               register={register('initiativeId')}
               options={listInitiatives()}
             />
+            <Select
+              label="Category"
+              register={register('categoryId')}
+              options={listCategories()}
+            />
             <TextInput label="Title" register={register('name')} />
             <TextArea label="Description" register={register('desc')} />
-            <Checkbox label="Mint Impact NFT" register={register('yesNFT')} check={true} />
+            <Checkbox label="Mint Story NFT" register={register('yesNFT')} check={true} />
           </form>
           <ButtonBlue
             id="buttonSubmit"
@@ -381,7 +455,9 @@ export default function Page() {
                 image3,
                 image4,
                 image5,
-                yesNFT
+                media,
+                yesNFT,
+                categoryId
               })
             }
           />
