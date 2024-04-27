@@ -28,10 +28,26 @@ const postRegistry = async (endpoint: string, body: Dictionary) => {
   const url = `${registryApiUrl}/${endpoint}`
   console.log('POST', url)
   const headers = new Headers()
-  headers.set('content-type', 'application/json')
+  headers.set('content-type', 'application/json; charset=utf8')
   headers.set('x-api-key', apiKey)
   const options: RequestInit = {
     method: 'POST',
+    headers: headers,
+    body: JSON.stringify(body)
+  }
+  const response = await fetch(url, options)
+  const result = await response.json()
+  return result
+}
+
+const putRegistry = async (endpoint: string, body: Dictionary) => {
+  const url = `${registryApiUrl}/${endpoint}`
+  console.log('PUT', url)
+  const headers = new Headers()
+  headers.set('content-type', 'application/json; charset=utf8')
+  headers.set('x-api-key', apiKey)
+  const options: RequestInit = {
+    method: 'PUT',
     headers: headers,
     body: JSON.stringify(body)
   }
@@ -83,6 +99,7 @@ export const updateUser = (id: string, body: Dictionary) => postRegistry('users/
 export const getUserWallets = () => fetchRegistry('userwallets')
 export const newUserWallet = (body: Dictionary) => postRegistry('userwallets', body)
 
+export const addStory = (body: Dictionary) => putRegistry('stories', body)
 export const newStory = (body: Dictionary) => postRegistry('stories', body)
 export const getStories = () => fetchRegistry('stories')
 export const getStoryById = (id: string) => fetchRegistry('stories/'+id)

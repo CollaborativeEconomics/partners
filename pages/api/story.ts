@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next'
-import { newStory } from 'utils/registry'
+import { addStory } from 'utils/registry'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { method, body } = req
@@ -10,7 +10,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       res.status(405).send(JSON.stringify({error:'Method not allowed'}))
     } else if (method === 'POST') {
       //res.status(501).send(JSON.stringify({error:'Not ready'}))
-      const result = await newStory(body)
+      const result = await addStory(body)
       console.log('RESULT', result)
       res.status(200).send(JSON.stringify(result))
     } else {

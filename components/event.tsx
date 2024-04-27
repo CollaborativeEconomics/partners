@@ -18,7 +18,7 @@ function toDate(date){
 }
 
 const Event = (item:EventProps) => {
-  console.log('ENV', process.env.NEXT_PUBLIC_IPFS_GATEWAY_URL)
+  //console.log('ENV', process.env.NEXT_PUBLIC_IPFS_GATEWAY_URL)
   const imgsrc = item.image.startsWith('ipfs:') ? process.env.NEXT_PUBLIC_IPFS_GATEWAY_URL + item.image.substr(5) : item.image
   return (
     <div className="flex flex-row justify-start w-full">
