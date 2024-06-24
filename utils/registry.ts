@@ -1,12 +1,9 @@
-import { NftData } from './registryTypes'
-
-const registryApiUrl = process.env.CFCE_REGISTRY_API_URL || ''
+const apiUrl = process.env.CFCE_REGISTRY_API_URL || ''
 const apiKey = process.env.CFCE_REGISTRY_API_KEY || ''
 
 type Dictionary = { [key: string]: any }
 
-const fetchRegistry = async (endpoint: string) => {
-  const url = `${registryApiUrl}/${endpoint}`
+const fetchRegistry = async (url: string) => {
   console.log('FETCH', url)
   const headers = new Headers()
   headers.set('content-type', 'application/json')
@@ -17,6 +14,7 @@ const fetchRegistry = async (endpoint: string) => {
   }
   const response = await fetch(url, options)
   const result = await response.json()
+  //console.log('DB', result)
   if(result?.error){
     console.log('FETCH ERROR', result.error)
     return null
@@ -24,8 +22,7 @@ const fetchRegistry = async (endpoint: string) => {
   return result.data
 }
 
-const postRegistry = async (endpoint: string, body: Dictionary) => {
-  const url = `${registryApiUrl}/${endpoint}`
+const postRegistry = async (url: string, body: Dictionary) => {
   console.log('POST', url)
   const headers = new Headers()
   headers.set('content-type', 'application/json; charset=utf8')
@@ -40,8 +37,7 @@ const postRegistry = async (endpoint: string, body: Dictionary) => {
   return result
 }
 
-const putRegistry = async (endpoint: string, body: Dictionary) => {
-  const url = `${registryApiUrl}/${endpoint}`
+const putRegistry = async (url: string, body: Dictionary) => {
   console.log('PUT', url)
   const headers = new Headers()
   headers.set('content-type', 'application/json; charset=utf8')
@@ -56,64 +52,84 @@ const putRegistry = async (endpoint: string, body: Dictionary) => {
   return result
 }
 
-export const newOrganization = (body: Dictionary) => postRegistry('organizations', body)
-export const getOrganizations = () => fetchRegistry('organizations')
-export const getOrganizationById = (id: string) => fetchRegistry(`organizations/${id}`)
-export const getOrganizationByEmail = (email: string) => fetchRegistry('organizations?email='+email)
-export const getOrganizationsByCategory = (categorySlug: string) => fetchRegistry(`organizations?category=${categorySlug}`)
-export const getOrganizationsByWallet = (walletAddress: string) => fetchRegistry(`organizations?wallet=${walletAddress}`)
-export const newOrganizationWallet = (orgid:string, body: Dictionary) => postRegistry('wallets?organizationid='+orgid, body)
-export const getFeaturedOrganization = () => fetchRegistry(`organizations?featured=true`)
+async function dbQuery(endpoint: string){
+  const url = `${apiUrl}/${endpoint}`
+  const res = await fetchRegistry(url)
+  return res
+}
 
-export const getCategories = () => fetchRegistry('categories')
+async function dbPost(endpoint: string, body: Dictionary){
+  const url = `${apiUrl}/${endpoint}`
+  const res = await postRegistry(url, body)
+  return res
+}
 
-export const newInitiative = (body: Dictionary) => postRegistry('initiatives', body)
-export const getInitiativeById = (id: string) => fetchRegistry(`initiatives/${id}`)
-export const getInitiativeByTag = (tag: string) => fetchRegistry(`initiatives?tag=${tag}`)
-export const getInitiatives = () => fetchRegistry('initiatives')
-export const getInitiativesByOrganization = (id: string) => fetchRegistry(`initiatives?orgid=${id}`)
+async function dbPut(endpoint: string, body: Dictionary){
+  const url = `${apiUrl}/${endpoint}`
+  const res = await putRegistry(url, body)
+  return res
+}
 
-export const newProvider = (body: Dictionary) => postRegistry('providers', body)
-export const getProviderById = (id: string) => fetchRegistry(`providers/${id}`)
-export const getProviders = () => fetchRegistry('providers')
 
-export const newCredit = (body: Dictionary) => postRegistry('credits', body)
-export const getCreditById = (id: string) => fetchRegistry(`credits/${id}`)
-export const getCredits = () => fetchRegistry('credits')
-export const getCreditsByInitiative = (id: string) => fetchRegistry(`credits?initid=${id}`)
-export const getCreditsByProvider = (id: string) => fetchRegistry(`credits?provid=${id}`)
+export const newOrganization = (body: Dictionary) => dbPost('organizations', body)
+export const getOrganizations = () => dbQuery('organizations')
+export const getOrganizationById = (id: string) => dbQuery(`organizations/${id}`)
+export const getOrganizationByEmail = (email: string) => dbQuery('organizations?email='+email)
+export const getOrganizationsByCategory = (categorySlug: string) => dbQuery(`organizations?category=${categorySlug}`)
+export const getOrganizationsByWallet = (walletAddress: string) => dbQuery(`organizations?wallet=${walletAddress}`)
+export const newOrganizationWallet = (orgid:string, body: Dictionary) => dbPost('wallets?organizationid='+orgid, body)
+export const getFeaturedOrganization = () => dbQuery(`organizations?featured=true`)
 
-export const createNFT = (body: Dictionary) => postRegistry('nft', body)
-export const getAllNFTs = (id: string) => fetchRegistry(`nft`)
-export const getNFTbyId = (id: string) => fetchRegistry(`nft?id=${id}`)
-export const getNFTbyTokenId = (id: string) => fetchRegistry(`nft?tokenid=${id}`)
-export const getNFTsByAccount = (id: string) => fetchRegistry(`nft?userid=${id}`)
-export const getNFTsByOrganization = (id: string) => fetchRegistry(`nft?orgid=${id}`)
+export const getCategories = () => dbQuery('categories')
 
-export const newUser = (body: Dictionary) => postRegistry('users', body)
-export const getUsers = () => fetchRegistry('users')
-export const getUserByWallet = (wallet: string) => fetchRegistry('users?wallet='+wallet)
-export const getUserByEmail = (email: string) => fetchRegistry('users?email='+email)
-export const getUserById = (id: string) => fetchRegistry('users/'+id)
-export const updateUser = (id: string, body: Dictionary) => postRegistry('users/'+id, body)
-export const getUserWallets = () => fetchRegistry('userwallets')
-export const newUserWallet = (body: Dictionary) => postRegistry('userwallets', body)
+export const newInitiative = (body: Dictionary) => dbPost('initiatives', body)
+export const getInitiativeById = (id: string) => dbQuery(`initiatives/${id}`)
+export const getInitiativeByTag = (tag: string) => dbQuery(`initiatives?tag=${tag}`)
+export const getInitiatives = () => dbQuery('initiatives')
+export const getInitiativesByOrganization = (id: string) => dbQuery(`initiatives?orgid=${id}`)
 
-export const addStory = (body: Dictionary) => putRegistry('stories', body)
-export const newStory = (body: Dictionary) => postRegistry('stories', body)
-export const getStories = () => fetchRegistry('stories')
-export const getStoryById = (id: string) => fetchRegistry('stories/'+id)
-export const getStoriesByOrganization = (id: string) => fetchRegistry('stories?orgid='+id)
-export const getStoriesByInitiative = (id: string) => fetchRegistry('stories?initid='+id)
-export const updateStory = (id: string, body: Dictionary) => postRegistry('stories/'+id, body)
-export const getStoryMedia = (id: string) => fetchRegistry('storymedia?id='+id)
-export const addStoryMedia = (id: string, body: Dictionary) => postRegistry('storymedia?id='+id, body)
+export const newProvider = (body: Dictionary) => dbPost('providers', body)
+export const getProviderById = (id: string) => dbQuery(`providers/${id}`)
+export const getProviders = () => dbQuery('providers')
 
-export const getDonations = (query: string) => fetchRegistry(`donations?`+query)
-export const getDonationsByOrganization = (orgid: string) => fetchRegistry(`donations?orgid=${orgid}`)
-export const getDonationsByOrganizationAndDate = (orgid: string, from: string, to: string) => fetchRegistry(`donations?orgid=${orgid}&from=${from}&to=${to}`)
-export const getDonationsByInitiative = (initid: string) => fetchRegistry(`donations?initid=${initid}`)
-export const getDonationsByInitiativeAndDate = (initid: string, from: string, to: string) => fetchRegistry(`donations?initid=${initid}&from=${from}&to=${to}`)
+export const newCredit = (body: Dictionary) => dbPost('credits', body)
+export const getCreditById = (id: string) => dbQuery(`credits/${id}`)
+export const getCredits = () => dbQuery('credits')
+export const getCreditsByInitiative = (id: string) => dbQuery(`credits?initid=${id}`)
+export const getCreditsByProvider = (id: string) => dbQuery(`credits?provid=${id}`)
+
+export const createNFT = (body: Dictionary) => dbPost('nft', body)
+export const getAllNFTs = (id: string) => dbQuery(`nft`)
+export const getNFTbyId = (id: string) => dbQuery(`nft?id=${id}`)
+export const getNFTbyTokenId = (id: string) => dbQuery(`nft?tokenid=${id}`)
+export const getNFTsByAccount = (id: string) => dbQuery(`nft?userid=${id}`)
+export const getNFTsByOrganization = (id: string) => dbQuery(`nft?orgid=${id}`)
+
+export const newUser = (body: Dictionary) => dbPost('users', body)
+export const getUsers = () => dbQuery('users')
+export const getUserByWallet = (wallet: string) => dbQuery('users?wallet='+wallet)
+export const getUserByEmail = (email: string) => dbQuery('users?email='+email)
+export const getUserById = (id: string) => dbQuery('users/'+id)
+export const updateUser = (id: string, body: Dictionary) => dbPost('users/'+id, body)
+export const getUserWallets = () => dbQuery('userwallets')
+export const newUserWallet = (body: Dictionary) => dbPost('userwallets', body)
+
+export const addStory = (body: Dictionary) => dbPut('stories', body)  // simply add record
+export const newStory = (body: Dictionary) => dbPost('stories', body) // add record and upload images
+export const getStories = () => dbQuery('stories')
+export const getStoryById = (id: string) => dbQuery('stories/'+id)
+export const getStoriesByOrganization = (id: string) => dbQuery('stories?orgid='+id)
+export const getStoriesByInitiative = (id: string) => dbQuery('stories?initid='+id)
+export const updateStory = (id: string, body: Dictionary) => dbPost('stories/'+id, body)
+export const getStoryMedia = (id: string) => dbQuery('storymedia?id='+id)
+export const addStoryMedia = (id: string, body: Dictionary) => dbPost('storymedia?id='+id, body)
+
+export const getDonations = (query: string) => dbQuery(`donations?`+query)
+export const getDonationsByOrganization = (orgid: string) => dbQuery(`donations?orgid=${orgid}`)
+export const getDonationsByOrganizationAndDate = (orgid: string, from: string, to: string) => dbQuery(`donations?orgid=${orgid}&from=${from}&to=${to}`)
+export const getDonationsByInitiative = (initid: string) => dbQuery(`donations?initid=${initid}`)
+export const getDonationsByInitiativeAndDate = (initid: string, from: string, to: string) => dbQuery(`donations?initid=${initid}&from=${from}&to=${to}`)
+export const updateStoryLink = (body: Dictionary) => dbPut('donations', body)
 
 
 // END

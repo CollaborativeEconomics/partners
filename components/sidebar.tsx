@@ -61,7 +61,7 @@ const Sidebar = ({
         <li className={styles.menuItem}><Link href="/dashboard/organization">New Organization</Link></li>
         <li className={styles.menuItem}><Link href="/dashboard/donations">Donations</Link></li>
         <li className={styles.menuItem}><Link href="/dashboard/initiatives">Initiatives</Link></li>
-        <li className={styles.menuItem}><Link href="/dashboard/stories">Story Certs</Link></li>
+        <li className={styles.menuItem}><Link href="/dashboard/stories">Stories</Link></li>
         <li className={styles.menuItem}><Link href="/dashboard/wallets">Wallets</Link></li>
       </nav>
       <div className={styles.loginBox}>

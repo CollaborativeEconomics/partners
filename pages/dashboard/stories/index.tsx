@@ -217,7 +217,7 @@ export default function Page() {
       created: dateToPrisma(new Date()),
       name: data.name,
       description: data.desc,
-      amount: 0,
+      amount: parseInt(data.amount),
       image: '',
       organizationId: orgid,
       initiativeId: data.initiativeId,
@@ -280,6 +280,7 @@ export default function Page() {
         events.push(result1.data)
         setChange(change+1)
         showMessage('Event info saved')
+
         if(data.yesNFT){
           showMessage('Event info saved, minting NFT...')
           const eventid = result1.data.id
@@ -334,6 +335,7 @@ export default function Page() {
       initiativeId: '',
       name: '',
       desc: '',
+      amount: '',
       image1: '',
       image2: '',
       image3: '',
@@ -348,6 +350,7 @@ export default function Page() {
     initiativeId,
     name,
     desc,
+    amount,
     image1,
     image2,
     image3,
@@ -360,6 +363,7 @@ export default function Page() {
     'initiativeId',
     'name',
     'desc',
+    'amount',
     'image1',
     'image2',
     'image3',
@@ -439,6 +443,7 @@ export default function Page() {
             />
             <TextInput label="Title" register={register('name')} />
             <TextArea label="Description" register={register('desc')} />
+            <TextInput label="Estimated Amount Spent" register={register('amount')} />
             <Checkbox label="Mint Story NFT" register={register('yesNFT')} check={true} />
           </form>
           <ButtonBlue
@@ -450,6 +455,7 @@ export default function Page() {
                 initiativeId,
                 name,
                 desc,
+                amount,
                 image1,
                 image2,
                 image3,

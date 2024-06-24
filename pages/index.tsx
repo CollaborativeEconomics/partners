@@ -38,7 +38,7 @@ export default function Page() {
     <>
       <Header />
       <Main>
-        <Title text="Partner Portal" />
+        <Title text="Partners Portal" />
         <div className="py-4">
           <li>Monitor your crypto donations</li>
           <li>Create funding initiatives</li>
