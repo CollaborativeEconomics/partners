@@ -1,4 +1,3 @@
-import '@/app/globals.css'
 import { Inter } from 'next/font/google'
 import Session from 'components/session'
 import Dashboard from 'components/dashboard'

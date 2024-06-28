@@ -129,6 +129,7 @@ export const getDonationsByOrganization = (orgid: string) => dbQuery(`donations?
 export const getDonationsByOrganizationAndDate = (orgid: string, from: string, to: string) => dbQuery(`donations?orgid=${orgid}&from=${from}&to=${to}`)
 export const getDonationsByInitiative = (initid: string) => dbQuery(`donations?initid=${initid}`)
 export const getDonationsByInitiativeAndDate = (initid: string, from: string, to: string) => dbQuery(`donations?initid=${initid}&from=${from}&to=${to}`)
+export const getDonationsByStory = (storyid: string) => dbQuery(`donations?storyid=${storyid}`)
 export const updateStoryLink = (body: Dictionary) => dbPut('donations', body)
 
 

@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
+//import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { useForm } from 'react-hook-form'
 import { getToken } from 'next-auth/jwt'
+import Link from 'next/link'
 import Dashboard from 'components/dashboard'
 import Sidebar from 'components/sidebar'
 import Title from 'components/title'
@@ -82,6 +84,7 @@ function getMediaExtension(mime){
 export default function Page() {
   //const orgid = organization?.id || ''
   //const initiatives = organization?.initiative || [{id:'0', title:'No initiatives'}]
+  //const router = useRouter()
   const { data: session, update } = useSession()
   const [orgid, setOrgid] = useState(session?.orgid || '')
   const [initiatives, setInitiatives] = useState([])
@@ -383,6 +386,10 @@ export default function Page() {
     console.log('ORG CHANGED', orgid, 'to', id)
   }
 
+  //function goStory(id){
+  //  router.push('/story/'+id)
+  //}
+
   return (
     <Dashboard>
       <Sidebar />
@@ -473,7 +480,9 @@ export default function Page() {
         </div>
         { events ? events.map((item) => (
           <div className={styles.mainBox} key={item.id}>
-            <Event key={item.id} {...item} />
+            <Link href={'/dashboard/stories/'+item.id}>
+              <Event key={item.id} {...item} />
+            </Link>
           </div>
         )) : (
           <h1 className="text-center text-2xl my-24">No events found</h1>
