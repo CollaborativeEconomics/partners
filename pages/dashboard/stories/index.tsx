@@ -7,7 +7,7 @@ import Link from 'next/link'
 import Dashboard from 'components/dashboard'
 import Sidebar from 'components/sidebar'
 import Title from 'components/title'
-import Event from 'components/event'
+import Story from 'components/story'
 import Label from 'components/form/label'
 import TextFile from 'components/form/textfile'
 import TextInput from 'components/form/textinput'
@@ -36,8 +36,8 @@ export async function getServerSideProps({req,res}) {
   }
   console.log('OrgID', organization.id)
   //console.log('org', organization)
-  const events = await getStoriesByOrganization(orgid)
-  return { props: { organization, events } }
+  const stories = await getStoriesByOrganization(orgid)
+  return { props: { organization, stories } }
 }
 */
 
@@ -88,7 +88,7 @@ export default function Page() {
   const { data: session, update } = useSession()
   const [orgid, setOrgid] = useState(session?.orgid || '')
   const [initiatives, setInitiatives] = useState([])
-  const [events, setEvents] = useState([])
+  const [stories, setStories] = useState([])
   const [categories, setCategories] = useState([])
 
   useEffect(()=>{
@@ -97,7 +97,7 @@ export default function Page() {
       const org = await apiFetch('organization?id='+oid) || {}
       const ini = org?.initiative || []
       const iid = org?.initiative?.length > 0 ? org?.initiative[0].id : ''
-      const evt = await apiFetch('stories?id='+oid) || []
+      const str = await apiFetch('stories?id='+oid) || []
       const cat = await apiFetch('categories') || []
       //console.log('ORG:', org)
       //console.log('INI:', ini)
@@ -107,7 +107,7 @@ export default function Page() {
       setOrgid(oid)
       setInitId(iid)
       setInitiatives(ini)
-      setEvents(evt)
+      setStories(str)
       setCategories(cat)
     }
     loadData()
@@ -121,6 +121,7 @@ export default function Page() {
     for (let i = 0; i < initiatives.length; i++) {
       list.push({ id: initiatives[i].id, name: initiatives[i].title })
     }
+    //setInitId(list[0].id)
     return list
   }
 
@@ -189,6 +190,10 @@ export default function Page() {
       showMessage('Initiative is required')
       return
     }
+    if (!data.categoryId){
+      showMessage('Category is required')
+      return
+    }
     const file1 = data.image1[0]
     const file2 = data.image2 ? data.image2[0] : null
     const file3 = data.image3 ? data.image3[0] : null
@@ -221,11 +226,14 @@ export default function Page() {
       name: data.name,
       description: data.desc,
       amount: parseInt(data.amount),
+      unitvalue: parseInt(data.unitvalue),
+      unitlabel: data.unitlabel,
       image: '',
       organizationId: orgid,
       initiativeId: data.initiativeId,
       categoryId: data.categoryId
     }
+
     try {
       showMessage('Saving image...')
       setButtonState(ButtonState.WAIT)
@@ -265,10 +273,10 @@ export default function Page() {
       const result1 = await resp1.json()
       console.log('RESULT1', result1)
       if (result1.error) {
-        showMessage('Error saving event: ' + result1.error)
+        showMessage('Error saving story: ' + result1.error)
         setButtonState(ButtonState.READY)
       } else if (typeof result1?.success == 'boolean' && !result1.success) {
-        showMessage('Error saving event: unknown')
+        showMessage('Error saving story: unknown')
         setButtonState(ButtonState.READY)
       } else {
         const storyid = result1.data.id
@@ -280,28 +288,28 @@ export default function Page() {
         const resp2 = await fetch('/api/storymedia?id='+storyid, opts2)
         const result2 = await resp2.json()
         console.log('RESULT2', result2)
-        events.push(result1.data)
+        stories.push(result1.data)
         setChange(change+1)
-        showMessage('Event info saved')
+        showMessage('Story info saved')
 
         if(data.yesNFT){
-          showMessage('Event info saved, minting NFT...')
-          const eventid = result1.data.id
-          console.log('Minting NFT for event', eventid)
-          const resMint = await fetch('/api/mint?eventid='+eventid)
+          showMessage('Story info saved, minting NFT...')
+          const storyid = result1.data.id
+          console.log('Minting NFT for story', storyid)
+          const resMint = await fetch('/api/mint?storyid='+storyid)
           const okNft = await resMint.json()
           console.log('RESULT', okNft)
           if(okNft?.error){
-            showMessage('Event saved, error minting NFT')
+            showMessage('Story saved, error minting NFT')
           } else {
-            showMessage('Event saved, NFT minted')
+            showMessage('Story saved, NFT minted')
           }
         }
         setButtonState(ButtonState.DONE)
       }
     } catch (ex) {
       console.error(ex)
-      showMessage('Error saving event: ' + ex.message)
+      showMessage('Error saving story: ' + ex.message)
       setButtonState(ButtonState.READY)
     }
   }
@@ -339,6 +347,8 @@ export default function Page() {
       name: '',
       desc: '',
       amount: '',
+      unitvalue: '',
+      unitlabel: '',
       image1: '',
       image2: '',
       image3: '',
@@ -354,6 +364,8 @@ export default function Page() {
     name,
     desc,
     amount,
+    unitvalue,
+    unitlabel,
     image1,
     image2,
     image3,
@@ -367,6 +379,8 @@ export default function Page() {
     'name',
     'desc',
     'amount',
+    'unitvalue',
+    'unitlabel',
     'image1',
     'image2',
     'image3',
@@ -377,9 +391,9 @@ export default function Page() {
     'categoryId'
   ])
 
-  // Used to refresh list of events after new record added
+  // Used to refresh list of stories after new record added
   useEffect(()=>{
-    console.log('Events changed!', change)
+    console.log('Stories changed!', change)
   },[change])
 
   async function onOrgChange(id) {
@@ -451,6 +465,14 @@ export default function Page() {
             <TextInput label="Title" register={register('name')} />
             <TextArea label="Description" register={register('desc')} />
             <TextInput label="Estimated Amount Spent" register={register('amount')} />
+            <TextInput
+              label="Dollars per unit ($20 per tree, $5 per meal, $150 per wheelchair)"
+              register={register('unitvalue')}
+            />
+            <TextInput
+              label="Unit label (tree, meal, wheelchair)"
+              register={register('unitlabel')}
+            />
             <Checkbox label="Mint Story NFT" register={register('yesNFT')} check={true} />
           </form>
           <ButtonBlue
@@ -463,6 +485,8 @@ export default function Page() {
                 name,
                 desc,
                 amount,
+                unitvalue,
+                unitlabel,
                 image1,
                 image2,
                 image3,
@@ -478,14 +502,14 @@ export default function Page() {
             {message}
           </p>
         </div>
-        { events ? events.map((item) => (
+        { stories ? stories.map((item) => (
           <div className={styles.mainBox} key={item.id}>
             <Link href={'/dashboard/stories/'+item.id}>
-              <Event key={item.id} {...item} />
+              <Story key={item.id} {...item} />
             </Link>
           </div>
         )) : (
-          <h1 className="text-center text-2xl my-24">No events found</h1>
+          <h1 className="text-center text-2xl my-24">No stories found</h1>
         )}
       </div>
     </Dashboard>

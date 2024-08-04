@@ -246,6 +246,8 @@ export default function Page() {
       desc: '',
       inidate: startDate(),
       enddate: addDays(30),
+      unitvalue: '',
+      unitlabel: '',
       creditType: '0',
       creditDesc: '',
       creditAmount: '',
@@ -258,6 +260,8 @@ export default function Page() {
     desc,
     inidate,
     enddate,
+    unitvalue,
+    unitlabel,
     creditType,
     creditDesc,
     creditAmount,
@@ -268,6 +272,8 @@ export default function Page() {
     'desc',
     'inidate',
     'enddate',
+    'unitvalue',
+    'unitlabel',
     'creditType',
     'creditDesc',
     'creditAmount',
@@ -309,6 +315,14 @@ export default function Page() {
               register={register('enddate')}
               type="date"
             />
+            <TextInput
+              label="Dollars per unit ($20 per tree, $5 per meal, $150 per wheelchair)"
+              register={register('unitvalue')}
+            />
+            <TextInput
+              label="Unit label (tree, meal, wheelchair)"
+              register={register('unitlabel')}
+            />
             <Select
               label="Credits"
               register={register('creditType')}
@@ -343,6 +357,8 @@ export default function Page() {
                 desc,
                 inidate,
                 enddate,
+                unitvalue,
+                unitlabel,
                 creditType,
                 creditDesc,
                 creditAmount,

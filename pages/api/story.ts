@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next'
-import { addStory, updateStoryLink } from 'utils/registry'
+import { addStory, updateImpactLink, updateStoryLink } from 'utils/registry'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { method, body } = req
@@ -19,6 +19,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           storyId,
           amount: body.amount
         }
+        const impact = await updateImpactLink(link)
+        console.log('IMPACT', impact)
         const linked = await updateStoryLink(link)
         console.log('LINKED', linked)
       }

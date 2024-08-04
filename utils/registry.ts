@@ -123,6 +123,8 @@ export const getStoriesByInitiative = (id: string) => dbQuery('stories?initid='+
 export const updateStory = (id: string, body: Dictionary) => dbPost('stories/'+id, body)
 export const getStoryMedia = (id: string) => dbQuery('storymedia?id='+id)
 export const addStoryMedia = (id: string, body: Dictionary) => dbPost('storymedia?id='+id, body)
+export const updateStoryLink = (body: Dictionary) => dbPost('impact', body)
+export const updateImpactLink = (body: Dictionary) => dbPut('impact', body)
 
 export const getDonations = (query: string) => dbQuery(`donations?`+query)
 export const getDonationsByOrganization = (orgid: string) => dbQuery(`donations?orgid=${orgid}`)
@@ -130,7 +132,6 @@ export const getDonationsByOrganizationAndDate = (orgid: string, from: string, t
 export const getDonationsByInitiative = (initid: string) => dbQuery(`donations?initid=${initid}`)
 export const getDonationsByInitiativeAndDate = (initid: string, from: string, to: string) => dbQuery(`donations?initid=${initid}&from=${from}&to=${to}`)
 export const getDonationsByStory = (storyid: string) => dbQuery(`donations?storyid=${storyid}`)
-export const updateStoryLink = (body: Dictionary) => dbPut('donations', body)
 
 
 // END

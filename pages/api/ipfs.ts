@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import * as fs from 'fs'
 import * as formidable from 'formidable'
-import fileUpload from 'utils/upload-aws'
+//import fileUpload from 'utils/upload-aws'
 import ipfsUpload from 'utils/upload-ipfs'
 
 // To avoid bodyParser corrupting file data
