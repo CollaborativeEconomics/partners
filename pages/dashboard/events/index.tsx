@@ -348,8 +348,8 @@ export default function Page() {
             <TextInput label="Dollars per unit ($20 per tree, $5 per meal, $150 per wheelchair)" register={register('unitvalue')} />
             <TextInput label="Unit label (tree, meal, wheelchair)" register={register('unitlabel')} />
             <TextInput label="Total units to deliver" register={register('quantity')} />
-            <TextInput label="Expected volunteers to participate" register={register('volunteers')} />
-            <TextInput label="Estimated payment per unit to volunteers (in USD)" register={register('payrate')} />
+            <TextInput label="Number of volunteers expected to participate" register={register('volunteers')} />
+            <TextInput label="Estimated payment to volunteers per unit (in USD)" register={register('payrate')} />
             <small className="mb-8 text-slate-300">* If you leave the payment blank it will not be considered Volunteer-to-Earn</small>
             {/* <Checkbox label="Mint Event NFT" register={register('yesNFT')} check={false} /> */}
           </form>

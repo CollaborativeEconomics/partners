@@ -139,5 +139,7 @@ export const getEventsByOrganization = (orgid: string) => dbQuery('events?orgid=
 export const getEventsByInitiative = (initid: string) => dbQuery('events?initid='+initid)
 export const newEvent = (body: Dictionary) => dbPost('events', body)
 
+export const getVolunteersByEvent = (id: string) => dbQuery('volunteers?eventid='+id)
+
 
 // END
