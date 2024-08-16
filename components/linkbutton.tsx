@@ -13,10 +13,7 @@ const LinkButton = ({
       className,
       ...props
     }: LinkProps & LinkButtonProps) => (
-  <Link
-    href={href}
-    className={`mx-auto px-12 py-2 rounded-full uppercase flex flex-row justify-center bg-blue-700 ${className}`}
-  >{text}</Link>
+  <Link href={href} className={`mx-auto px-12 py-2 rounded-full uppercase text-center bg-blue-700 ${className}`}>{text}</Link>
 )
 
 LinkButton.displayName = 'LinkButton'

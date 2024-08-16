@@ -13,6 +13,7 @@ import OrganizationAvatar from 'components/organizationavatar'
 import { getEventById, getVolunteersByEvent } from 'utils/registry'
 import styles from 'styles/dashboard.module.css'
 import ButtonBlue from 'components/buttonblue'
+import LinkButton from 'components/linkbutton'
 
 export async function getServerSideProps(context) {
   const id = context.query.id
@@ -91,8 +92,7 @@ export default function Event({id, event, media, volunteers}){
             </table>
           </div>
           <div className="w-full flex flex-row justify-between">
-            <Link href={`/register/${id}`}>REGISTER</Link>
-            <ButtonBlue text="REWARD" onClick={reward}/>
+            <LinkButton href={`/dashboard/register/${id}`} text="REGISTER" />
           </div>
         </div>
       </div>
