@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useForm } from 'react-hook-form'
 import Image from 'next/image'
 import Script from 'next/script'
 import Title from 'components/title'
@@ -6,6 +7,7 @@ import ButtonBlue from 'components/buttonblue'
 import { getEventById } from 'utils/registry'
 import styles from 'styles/dashboard.module.css'
 import { BrowserQRCodeReader } from '@zxing/library';
+import TextInput from 'components/form/textinput'
 
 export async function getServerSideProps(context) {
   const id = context.query.id
@@ -16,7 +18,13 @@ export async function getServerSideProps(context) {
 export default function Page({id, event}) {
   console.log('EVENT ID', id)
   const [device, setDevice] = useState(null)
-  const [message, setMessage] = useState('Scan the QR-CODE to register for the event')
+  const [message, setMessage] = useState('Scan the QR-CODE to report work delivered')
+  const { register, watch } = useForm({defaultValues: { units: '' }})
+  const [units] = watch(['units'])
+  const payrate = event?.payrate || 1
+  const unitlabel = event?.unitlabel || ''
+  const [amount, setAmount] = useState(payrate)
+
 
   console.log('Loading scanner')
   const qrReader = new BrowserQRCodeReader()
@@ -58,19 +66,42 @@ export default function Page({id, event}) {
     }
   }
 
+  async function onMint() {
+    console.log('MINT')
+    // TODO: Lawal's magic goes here
+  }
+
+  function recalc(evt) {
+    const value = evt.target.value || 1
+    console.log('CALC', value)
+    const total = value * payrate
+    setAmount(total)
+  }
+
   return (
     <div className='mt-8'>
       <div className={styles.mainBox}>
         <Title text="VOLUNTEER TO EARN" />
         <h1>{event.name}</h1>
         <div className="mt-8 w-[470px] h-[265px] border">
-          <video id="qrcode" width="470" height="265"></video>
+          <video id="qrcode" width="470" height="265" className="w-[470px] h-[265px]"></video>
         </div>
         <div className="w-full mb-2 flex flex-row justify-between">
           <ButtonBlue id="buttonSubmit" text="SCAN" onClick={onScan} />
           <ButtonBlue id="buttonSubmit" text="STOP" onClick={onStop} />
         </div>
         <p id="message" className="mb-6 center">{message}</p>
+        <div id="form" className="">
+          <TextInput label="Units delivered" register={register('units')} onChange={(evt)=>recalc(evt)}/>
+          <div className="text-center">
+            <p>Estimated reward based on units delivered</p>
+            <p>{payrate} USD per unit ({unitlabel})</p>
+            <p><big><b>Total of {amount} USD</b></big></p>
+          </div>
+        </div>
+        <div className="w-full mb-2 flex flex-row justify-between">
+          <ButtonBlue id="buttonSubmit" text="MINT REPORT NFT" onClick={onMint} />
+        </div>
       </div>
     </div>
   )

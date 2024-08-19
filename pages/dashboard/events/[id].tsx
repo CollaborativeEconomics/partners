@@ -31,6 +31,7 @@ export default function Event({id, event, media, volunteers}){
   console.log('EVENTID', id)
   console.log('VOLUNTEERS', volunteers.length)
   var total = 0
+  const [ready, setReady] = useState(false)
 
   function shortDate(d){
     const opt:Intl.DateTimeFormatOptions = {
@@ -38,10 +39,15 @@ export default function Event({id, event, media, volunteers}){
       month: 'numeric',
       day: '2-digit'
     }
-    //const date = new Date(d).toLocaleDateString('en', opt)
     const date = new Date(d).toLocaleDateString('en-CA')
+    //const date = new Date(d).toLocaleDateString('en', opt)
     //const date = Intl.DateTimeFormat('jp-JP').format(new Date(d))
     return date
+  }
+
+  function deploy(){
+    // TODO: More of Lawal's magic to deploy contracts
+    setReady(true)
   }
 
   function register(){
@@ -91,8 +97,13 @@ export default function Event({id, event, media, volunteers}){
               </tfoot>
             </table>
           </div>
-          <div className="w-full flex flex-row justify-between">
-            <LinkButton href={`/dashboard/register/${id}`} text="REGISTER" />
+          <div className="w-full flex flex-row justify-between mb-8">
+            <ButtonBlue text="START EVENT" onClick={deploy}/>
+          </div>
+          <div className="w-full flex flex-row justify-between mb-8">
+            <LinkButton href={`/dashboard/events/register/${id}`} text="REGISTER" />
+            <LinkButton href={`/dashboard/events/report/${id}`} text="REPORT" />
+            <LinkButton href={`/dashboard/events/reward/${id}`} text="REWARD" />
           </div>
         </div>
       </div>
