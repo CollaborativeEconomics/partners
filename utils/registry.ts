@@ -133,5 +133,13 @@ export const getDonationsByInitiative = (initid: string) => dbQuery(`donations?i
 export const getDonationsByInitiativeAndDate = (initid: string, from: string, to: string) => dbQuery(`donations?initid=${initid}&from=${from}&to=${to}`)
 export const getDonationsByStory = (storyid: string) => dbQuery(`donations?storyid=${storyid}`)
 
+export const getEvents = (query: string) => dbQuery('events?'+query)
+export const getEventById = (id: string) => dbQuery('events?id='+id)
+export const getEventsByOrganization = (orgid: string) => dbQuery('events?orgid='+orgid)
+export const getEventsByInitiative = (initid: string) => dbQuery('events?initid='+initid)
+export const newEvent = (body: Dictionary) => dbPost('events', body)
+
+export const getVolunteersByEvent = (id: string) => dbQuery('volunteers?eventid='+id)
+
 
 // END
