@@ -141,5 +141,8 @@ export const newEvent = (body: Dictionary) => dbPost('events', body)
 
 export const getVolunteersByEvent = (id: string) => dbQuery('volunteers?eventid='+id)
 
+export const newContract = (body: Dictionary) => dbPost('contracts', body)
+export const getContract = (chain: string, type: string, owner: string) => dbQuery(`contracts?chain=${chain}&type=${type}&owner=${owner}`)
+
 
 // END
