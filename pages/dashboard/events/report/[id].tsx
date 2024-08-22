@@ -19,8 +19,8 @@ export default function Page({id, event}) {
   console.log('EVENT ID', id)
   const [device, setDevice] = useState(null)
   const [message, setMessage] = useState('Scan the QR-CODE to report work delivered')
-  const { register, watch } = useForm({defaultValues: { units: '' }})
-  const [units] = watch(['units'])
+  const {register, watch} = useForm({defaultValues: { address: '', units: '' }})
+  const [address, units] = watch(['address','units'])
   const payrate = event?.payrate || 1
   const unitlabel = event?.unitlabel || ''
   const [amount, setAmount] = useState(payrate)
@@ -41,6 +41,8 @@ export default function Page({id, event}) {
       console.log('Result', result)
       const address = result.getText()
       setMessage('Wallet '+address)
+      const input = document.getElementById('address') as HTMLInputElement
+      input.value = address
       // We got the wallet address
       // We may save the eventid, address and chain in volunteers table
       // TODO: Lawal's magic goes here
@@ -91,7 +93,8 @@ export default function Page({id, event}) {
           <ButtonBlue id="buttonSubmit" text="STOP" onClick={onStop} />
         </div>
         <p id="message" className="mb-6 center">{message}</p>
-        <div id="form" className="">
+        <div id="form" className="w-[90%]">
+          <TextInput label="Wallet address" id="address" className="text-center" register={register('address')} />
           <TextInput label="Units delivered" register={register('units')} onChange={(evt)=>recalc(evt)}/>
           <div className="text-center">
             <p>Estimated reward based on units delivered</p>
