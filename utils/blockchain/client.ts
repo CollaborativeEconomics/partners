@@ -1,4 +1,3 @@
-import { createThirdwebClient } from "thirdweb";
 import { createPublicClient, createWalletClient, custom, PublicActions, http, publicActions } from "viem";
 import { arbitrumSepolia } from "viem/chains";
 
@@ -8,21 +7,27 @@ declare global {
   }
 }
 
-const [account] = await window.ethereum!.request({ method: 'eth_requestAccounts' })
-
-// const clientId = process.env.THIRDWEB_CLIENT_ID;
-
-// if (!clientId) {
-//   throw new Error("No client ID provided");
-// }
-
 export const PublicClient = createPublicClient({
   chain: arbitrumSepolia,
   transport: http(),
 });
 
-export const WalletClient = createWalletClient({
-  account,
-  chain: arbitrumSepolia,
-  transport: custom(window.ethereum)
-}).extend(publicActions)
+export let walletClient;
+export let account;
+
+export const initializeWallet = () => {
+  if (typeof window !== 'undefined') {
+    console.log('initializing wallet')
+    walletClient = createWalletClient({
+      chain: arbitrumSepolia,
+      transport: custom(window.ethereum)
+    }).extend(publicActions)
+    // [account] = walletClient.getAddress();
+  }
+}
+
+// export const WalletClient = createWalletClient({
+//   account,
+//   chain: arbitrumSepolia,
+//   transport: custom(window.ethereum)
+// }).extend(publicActions)

@@ -1,24 +1,11 @@
-import { WalletClient } from "./client";
-import { FactoryAbi, NFTAbi } from "./abis";
+import { FactoryAbi, NFTAbi } from "../../chains/contracts/abis";
+import { useWriteContract } from "wagmi";
+import { type UseWriteContractParameters } from 'wagmi'
 
 let deployedNFTAddress: string | null = null;
 
-export async function deployNFT() {
-    const { request } = await WalletClient.simulateContract({
-        address: "ox",
-        abi: FactoryAbi,
-        functionName: "deployVolunteerNFT",
-        args: ["", ""],   
-    })
-
-    if (!request || typeof request !== 'string' || !/^0x[a-fA-F0-9]{40}$/.test(request)) {
-        throw new Error("Invalid address returned from deployVolunteerNFT");
-    }
-
-    await WalletClient.writeContract(request)
-
-    deployedNFTAddress = request;
-    return request
+export async function deployNFT(address: `0x${string}`) {
+    
 }
 
 export async function mintNFT(to: string, amount: bigint, tokenId: bigint) {
@@ -27,14 +14,15 @@ export async function mintNFT(to: string, amount: bigint, tokenId: bigint) {
         throw new Error("NFT contract has not been deployed yet.");
     }
 
-    const { request } = await WalletClient.simulateContract({
+    const { request } = await walletClient.simulateContract({
         address: deployedNFTAddress,
         abi: NFTAbi,
         functionName: "mint",
-        args: [to, tokenId, amount]
+        args: [to, tokenId, amount],
+        account
     })
 
-    await WalletClient.writeContract(request)
+    await walletClient.writeContract(request)
 }
 
 export async function getTokenURI(tokenId: bigint) {
@@ -42,11 +30,12 @@ export async function getTokenURI(tokenId: bigint) {
         throw new Error("NFT not deployed");
     }
 
-    const data = await WalletClient.readContract({
+    const data = await walletClient.readContract({
         address: deployedNFTAddress,
         abi: NFTAbi,
         functionName: "uri",
         args: [tokenId],
+        account
     })
 
     return data

@@ -1,58 +1,64 @@
-import { WalletClient } from "./client";
-import { FactoryAbi, DistributorAbi } from "./abis";
+
+import { FactoryAbi, DistributorAbi } from "../../chains/contracts/abis";
+import { useWriteContract } from "wagmi";
 
 let deployedDistributorAddress: string | null = null;
 
-export async function deployDistributor() {
-    const { request } = await WalletClient.simulateContract({
-        address: "ox",
+export async function deployDistributor( address: `0x${string}` ) {
+    console.log('DEPLOY')
+    const { data: hash, writeContract } = useWriteContract();
+
+
+    writeContract({
+        address: usdcAddressMainnet,
         abi: FactoryAbi,
         functionName: "deployVolunteerNFT",
-        args: ["", ""],   
+        args: [usdcAddressTestnet, address],
     })
 
     if (!request || typeof request !== 'string' || !/^0x[a-fA-F0-9]{40}$/.test(request)) {
         throw new Error("Invalid address returned from deployVolunteerNFT");
     }
 
-    await WalletClient.writeContract(request)
+    await walletClient.writeContract(request)
 
     deployedDistributorAddress = request;
     return request
 }
 
-export async function distributeTokenEqually(tokenId: bigint) {
-    if (!deployedDistributorAddress) {
-        throw new Error("Distributor not deployed");
-    }
+// export async function distributeTokenEqually(tokenId: bigint) {
+//     if (!deployedDistributorAddress) {
+//         throw new Error("Distributor not deployed");
+//     }
 
-    const { request } = await WalletClient.simulateContract({
-        address: deployedDistributorAddress,
-        abi: DistributorAbi,
-        functionName: "distributeTokensEqually",
-        args: [tokenId],
-    })
+//     const { request } = await walletClient.simulateContract({
+//         address: deployedDistributorAddress,
+//         abi: DistributorAbi,
+//         functionName: "distributeTokensEqually",
+//         args: [tokenId],
+//     })
 
 
-    await WalletClient.writeContract(request)
+//     await walletClient.writeContract(request)
 
-    return request
-}
+//     return request
+// }
 
 export async function distributeTokenByUnit(tokenId: bigint) {
     if (!deployedDistributorAddress) {
         throw new Error("Distributor not deployed");
     }
 
-    const { request } = await WalletClient.simulateContract({
+    const { request } = await walletClient.simulateContract({
         address: deployedDistributorAddress,
         abi: DistributorAbi,
         functionName: "distributeTokensByUnit",
         args: [tokenId],
+        account
     })
 
 
-    await WalletClient.writeContract(request)
+    await walletClient.writeContract(request)
 
     return request
 }
@@ -62,15 +68,16 @@ export async function whitelistAddresses(addresses: string[]) {
         throw new Error("Distributor not deployed");
     }
 
-    const { request } = await WalletClient.simulateContract({
+    const { request } = await walletClient.simulateContract({
         address: deployedDistributorAddress,
         abi: DistributorAbi,
         functionName: "whitelistAddresses",
         args: [addresses],
+        account
     })
 
 
-    await WalletClient.writeContract(request)
+    await walletClient.writeContract(request)
 
     return request
 }
@@ -80,15 +87,16 @@ export async function removeFromWhitelist(address: string) {
         throw new Error("Distributor not deployed");
     }
 
-    const { request } = await WalletClient.simulateContract({
+    const { request } = await walletClient.simulateContract({
         address: deployedDistributorAddress,
         abi: DistributorAbi,
         functionName: "removeFromWhitelist",
         args: [address],
+        account
     })
 
 
-    await WalletClient.writeContract(request)
+    await walletClient.writeContract(request)
 
     return request
 }
@@ -98,15 +106,16 @@ export async function updateBaseFee(baseFee: bigint) {
         throw new Error("Distributor not deployed");
     }
 
-    const { request } = await WalletClient.simulateContract({
+    const { request } = await walletClient.simulateContract({
         address: deployedDistributorAddress,
         abi: DistributorAbi,
         functionName: "updateBaseFee",
         args: [baseFee],
+        account
     })
 
 
-    await WalletClient.writeContract(request)
+    await walletClient.writeContract(request)
 
     return request
 }
@@ -116,14 +125,15 @@ export async function transferOwnership(newOwner: string) {
         throw new Error("Distributor not deployed");
     }
 
-    const { request } = await WalletClient.simulateContract({
+    const { request } = await walletClient.simulateContract({
         address: deployedDistributorAddress,
         abi: DistributorAbi,
         functionName: "transferOwnership",
         args: [newOwner],
+        account
     })
 
-    await WalletClient.writeContract(request)
+    await walletClient.writeContract(request)
 
     return request
 }
@@ -133,14 +143,15 @@ export async function updateWhitelist(address: string) {
         throw new Error("Distributor not deployed");
     }
 
-    const { request } = await WalletClient.simulateContract({
+    const { request } = await walletClient.simulateContract({
         address: deployedDistributorAddress,
         abi: DistributorAbi,
         functionName: "updateWhitelist",
         args: [address],
+        account
     })
 
-    await WalletClient.writeContract(request)
+    await walletClient.writeContract(request)
 
     return request
 }
@@ -150,14 +161,15 @@ export async function addTokenAddress(tokenAddress: string) {
         throw new Error("Distributor not deployed");
     }
 
-    const { request } = await WalletClient.simulateContract({
+    const { request } = await walletClient.simulateContract({
         address: deployedDistributorAddress,
         abi: DistributorAbi,
-        functionName: "addTokenAddress",
+        functionName: "changeTokenAddress",
         args: [tokenAddress],
+        account
     })
 
-    await WalletClient.writeContract(request)
+    await walletClient.writeContract(request)
 
     return request
 }
@@ -167,11 +179,12 @@ export async function getBaseFee() {
         throw new Error("Distributor not deployed");
     }
 
-    const data = await WalletClient.readContract({
+    const data = await walletClient.readContract({
         address: deployedDistributorAddress,
         abi: DistributorAbi,
         functionName: "getBaseFee",
         args: [],
+        account
     })
 
     return data
@@ -182,10 +195,10 @@ export async function getTokens() {
         throw new Error("Distributor not deployed");
     }
 
-    const data = await WalletClient.readContract({
+    const data = await walletClient.readContract({
         address: deployedDistributorAddress,
         abi: DistributorAbi,
-        functionName: "getTokens",
+        functionName: "getToken",
         args: [],
     })
 
@@ -197,7 +210,7 @@ export async function getWhitelistedAddresses() {
         throw new Error("Distributor not deployed");
     }
 
-    const data = await WalletClient.readContract({
+    const data = await walletClient.readContract({
         address: deployedDistributorAddress,
         abi: DistributorAbi,
         functionName: "getWhitelistedAddresses",
@@ -212,7 +225,7 @@ export async function isWhitelisted(address: string) {
         throw new Error("Distributor not deployed");
     }
 
-    const data = await WalletClient.readContract({
+    const data = await walletClient.readContract({
         address: deployedDistributorAddress,
         abi: DistributorAbi,
         functionName: "isWhitelisted",
@@ -227,7 +240,7 @@ export async function owner() {
         throw new Error("Distributor not deployed");
     }
 
-    const data = await WalletClient.readContract({
+    const data = await walletClient.readContract({
         address: deployedDistributorAddress,
         abi: DistributorAbi,
         functionName: "owner",
@@ -242,7 +255,7 @@ export async function registeredAddresses(index: bigint) {
         throw new Error("Distributor not deployed");
     }
 
-    const data = await WalletClient.readContract({
+    const data = await walletClient.readContract({
         address: deployedDistributorAddress,
         abi: DistributorAbi,
         functionName: "registeredAddresses",
