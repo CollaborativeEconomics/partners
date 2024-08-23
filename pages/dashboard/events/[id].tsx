@@ -15,13 +15,11 @@ import styles from 'styles/dashboard.module.css'
 import ButtonBlue from 'components/buttonblue'
 import LinkButton from 'components/linkbutton'
 import { deployDistributor } from 'utils/blockchain/deployTokenDistributor'
-import { createPublicClient, createWalletClient, custom, PublicActions, http, publicActions } from "viem";
-// import { arbitrumSepolia } from "viem/chains";
-import { Connector, useConnect, useAccount, useWriteContract } from 'wagmi'
-import { readContract } from '@wagmi/core'
+import { Connector, useConnect, useAccount, useWriteContract, useWatchContractEvent } from 'wagmi'
+import { readContract, watchContractEvent } from '@wagmi/core'
 import { arbitrumSepolia } from 'wagmi/chains'
 import { config } from 'chains/config'
-import { FactoryAbi } from 'chains/contracts/volunteers/abis/FactoryAbi'
+import { FactoryAbi, NFTAbi, DistributorAbi } from 'chains/contracts/volunteers/abis'
 import { parseEther } from 'viem'
 
 export async function getServerSideProps(context) {
@@ -45,10 +43,13 @@ export default function Event({id, event, media, volunteers}){
   const { connectors, connect } = useConnect()
   const { address } = useAccount()
   const { data: hash, writeContract } = useWriteContract({ config});
+
+  // State Variables
   const [ready, setReady] = useState(false)
   const [distributor, setDistributor] = useState(null)
   const [NFT, setNFT] = useState(null)
   const [isClient, setIsClient] = useState(false)
+  const [mintedAddresses, setMintedAddresses] = useState<`0x${string}`[]>([])
 
   useEffect(() => {
     setIsClient(true);
@@ -141,14 +142,124 @@ export default function Event({id, event, media, volunteers}){
       setReady(true);
     }
 
-  function register(){
-    console.log('REGISTER')
+    async function register() {
+      if (!address || !NFT) {
+        console.error('User not connected or NFT contract not deployed');
+        return;
+      }
     
-  }
+      try {
+        // Check if user already has NFT with token ID 1
+        const balance = await readContract(config, {
+          address: NFT as `0x${string}`,
+          abi: NFTAbi,
+          functionName: 'balanceOf',
+          args: [address, BigInt(1)]
+        });
+    
+        if (balance > BigInt(0)) {
+          throw new Error('User already has an NFT for this event');
+        }
+    
+        // Mint new NFT for the user
+        writeContract({
+          address: NFT as `0x${string}`,
+          abi: NFTAbi,
+          functionName: 'mint',
+          args: [address, BigInt(1), BigInt(1)],
+          chain: arbitrumSepolia,
+          account: address
+        });
+    
+        console.log('NFT minted successfully');
+      } catch (error) {
+        console.error('Registration error:', error);
+      }
+    }
 
-  function reward(){
-    console.log('REWARD')
-  }
+    async function report() {
+      if (!address || !NFT) {
+        console.error('User not connected or NFT contract not deployed');
+        return;
+      }
+    
+      try {
+        // Check if user has NFT with token ID 1
+        const balance = await readContract(config, {
+          address: NFT as `0x${string}`,
+          abi: NFTAbi,
+          functionName: 'balanceOf',
+          args: [address, BigInt(1)]
+        });
+    
+        if (balance === BigInt(0)) {
+          throw new Error('Not yet registered');
+        }
+
+            // Set up event listener for TransferSingle event
+    const unwatch = watchContractEvent(config, 
+      {
+        address: NFT as `0x${string}`,
+        abi: NFTAbi,
+        eventName: 'TransferSingle',
+        onLogs(logs) { 
+          logs.forEach(log => {
+            const { args } = log;
+            if (args.id === BigInt(2)) {
+              console.log(`Token ID 2 minted to address: ${args.to}`);
+              setMintedAddresses(prev => [...prev, args.to]);
+            }
+          });
+          console.log('Logs changed!', logs) 
+        }, 
+      });
+      unwatch()
+    
+        // Mint token ID 2 for the user
+        writeContract({
+          address: NFT as `0x${string}`,
+          abi: NFTAbi,
+          functionName: 'mint',
+          args: [address, BigInt(2), BigInt(1)],
+          chain: arbitrumSepolia,
+          account: address
+        });
+    
+        console.log('Reward NFT (token ID 2) minted successfully');
+      } catch (error) {
+        console.error('Reward error:', error);
+      }
+    }
+  
+    async function reward() {
+      if (!address || !distributor) {
+        console.error('User not connected or Distributor contract not deployed');
+        return;
+      }
+    
+      try {
+        // Create a dummy address array
+        const dummyAddresses: `0x${string}`[] = [
+          '0x1234567890123456789012345678901234567890',
+          '0x2345678901234567890123456789012345678901',
+          '0x3456789012345678901234567890123456789012'
+        ];
+    
+        // Call distributeTokensByUnit function
+        writeContract({
+          address: distributor as `0x${string}`,
+          abi: DistributorAbi,
+          functionName: 'distributeTokensByUnit',
+          args: [dummyAddresses], // mintedAddress
+          chain: arbitrumSepolia,
+          account: address
+        });
+    
+        console.log('Tokens distributed successfully');
+      } catch (error) {
+        console.error('Reward distribution error:', error);
+      }
+    }
 
   return (
     <Dashboard>
