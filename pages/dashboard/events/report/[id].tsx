@@ -5,9 +5,15 @@ import Script from 'next/script'
 import Title from 'components/title'
 import ButtonBlue from 'components/buttonblue'
 import { getEventById } from 'utils/registry'
+import { cleanAddress } from 'utils/address'
 import styles from 'styles/dashboard.module.css'
 import { BrowserQRCodeReader } from '@zxing/library';
 import TextInput from 'components/form/textinput'
+import { Connector, useConnect, useAccount, useWriteContract } from 'wagmi'
+import { readContract, watchContractEvent, switchChain } from '@wagmi/core'
+import { arbitrumSepolia } from 'wagmi/chains'
+import { config } from 'chains/config'
+import { NFTAbi } from 'chains/contracts/volunteers/abis'
 
 export async function getServerSideProps(context) {
   const id = context.query.id
@@ -15,15 +21,19 @@ export async function getServerSideProps(context) {
   return { props: { id, event } }
 }
 
-export default function Page({id, event}) {
+export default function Page({id, event }) {
   console.log('EVENT ID', id)
   const [device, setDevice] = useState(null)
+  const [mintedAddresses, setMintedAddresses] = useState<`0x${string}`[]>([])
   const [message, setMessage] = useState('Scan the QR-CODE to report work delivered')
-  const {register, watch} = useForm({defaultValues: { address: '', units: '' }})
+  const {register, watch, setValue} = useForm({defaultValues: { address: '', units: '' }})
   const [address, units] = watch(['address','units'])
   const payrate = event?.payrate || 1
   const unitlabel = event?.unitlabel || ''
   const [amount, setAmount] = useState(payrate)
+  const { data: hash, writeContract } = useWriteContract({ config});
+  const { connectors, connect } = useConnect()
+  const account = useAccount()
 
 
   console.log('Loading scanner')
@@ -41,6 +51,7 @@ export default function Page({id, event}) {
       console.log('Result', result)
       const address = result.getText()
       setMessage('Wallet '+address)
+      setValue('address', address);
       const input = document.getElementById('address') as HTMLInputElement
       input.value = address
       // We got the wallet address
@@ -69,8 +80,68 @@ export default function Page({id, event}) {
   }
 
   async function onMint() {
-    console.log('MINT')
-    // TODO: Lawal's magic goes here
+    const nft: `0x${string}` = "0x950728DE32cC1bF223D3Fe51B0a44A4A1C868A72"
+    console.log('units', units)
+
+    if (account.chainId !== arbitrumSepolia.id) {
+      await switchChain(config, {chainId: arbitrumSepolia.id})
+    }
+
+    if (!account || !nft) {
+      console.error('User not connected or NFT contract not deployed');
+      return;
+    }
+  
+    console.log("address", address)
+
+    const cleanedAddress = cleanAddress(address);
+
+    try {
+      // Check if user has NFT with token ID 1
+      const balance = await readContract(config, {
+        address: nft,
+        abi: NFTAbi,
+        functionName: 'balanceOf',
+        args: [cleanedAddress as `0x${string}`, BigInt(1)]
+      });
+  
+      if (balance === BigInt(0)) {
+        throw new Error('Not yet registered');
+      }
+
+          // Set up event listener for TransferSingle event
+  const unwatch = watchContractEvent(config, 
+    {
+      address: nft,
+      abi: NFTAbi,
+      eventName: 'TransferSingle',
+      onLogs(logs) { 
+        logs.forEach(log => {
+          const { args } = log;
+          if (args.id === BigInt(2)) {
+            console.log(`Token ID 2 minted to address: ${args.to}`);
+            setMintedAddresses(prev => [...prev, args.to]);
+          }
+        });
+        console.log('Logs changed!', logs) 
+      }, 
+    });
+    unwatch()
+  
+      // Mint token ID 2 for the user
+      writeContract({
+        address: nft,
+        abi: NFTAbi,
+        functionName: 'mint',
+        args: [cleanedAddress as `0x${string}`, BigInt(2), BigInt(units)],
+        chain: arbitrumSepolia,
+        account: account.address
+      });
+  
+      console.log('Reward NFT (token ID 2) minted successfully');
+    } catch (error) {
+      console.error('Reward error:', error);
+    }
   }
 
   function recalc(evt) {

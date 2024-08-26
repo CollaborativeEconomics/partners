@@ -14,13 +14,13 @@ import { getEventById, getVolunteersByEvent } from 'utils/registry'
 import styles from 'styles/dashboard.module.css'
 import ButtonBlue from 'components/buttonblue'
 import LinkButton from 'components/linkbutton'
-import { deployDistributor } from 'utils/blockchain/deployTokenDistributor'
-import { Connector, useConnect, useAccount, useWriteContract, useWatchContractEvent } from 'wagmi'
-import { readContract, watchContractEvent } from '@wagmi/core'
+import { useConnect, useAccount, useWriteContract, useSimulateContract} from 'wagmi'
+import { readContract, connect, switchChain, waitForTransaction} from '@wagmi/core'
 import { arbitrumSepolia } from 'wagmi/chains'
 import { config } from 'chains/config'
-import { FactoryAbi, NFTAbi, DistributorAbi } from 'chains/contracts/volunteers/abis'
+import { FactoryAbi } from 'chains/contracts/volunteers/abis'
 import { parseEther } from 'viem'
+import { newContract } from 'utils/registry'
 
 export async function getServerSideProps(context) {
   const id = context.query.id
@@ -40,20 +40,14 @@ export default function Event({id, event, media, volunteers}){
   var total = 0
   let NFTAddress: `0x${string}`;
   let distributorAddress: `0x${string}`;
-  const { connectors, connect } = useConnect()
-  const { address } = useAccount()
-  const { data: hash, writeContract } = useWriteContract({ config});
+  // const { connectors, connect } = useConnect()
+  const { chainId, address } = useAccount()
+  const { data, writeContractAsync } = useWriteContract({ config});
 
   // State Variables
   const [ready, setReady] = useState(false)
   const [distributor, setDistributor] = useState(null)
   const [NFT, setNFT] = useState(null)
-  const [isClient, setIsClient] = useState(false)
-  const [mintedAddresses, setMintedAddresses] = useState<`0x${string}`[]>([])
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   function shortDate(d){
     const opt:Intl.DateTimeFormatOptions = {
@@ -85,182 +79,118 @@ export default function Event({id, event, media, volunteers}){
       throw error;
     }
   }
-
-  async function deploy(){
-    const FactoryAddress = "0xA14F3dD410021c7f05Ca1aEf7aDc9C86943E839f";
-    const usdcAddressMainnet = "0xaf88d065e77c8cC2239327C5EDb3A432268e5831";
-    const usdcAddressTestnet = "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d";
-    const account = address;
-    connectors.map((connector) => connect({connector}))
+  
+    const FactoryAddress = "0xA14F3dD410021c7f05Ca1aEf7aDc9C86943E839f"
+    const usdcAddressTestnet = "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d"
+  
+    async function deployNFT() {
       try {
-        const uri = "https://ipfs.io/ipfs/QmeSjSinHpPnmXmspMjwiXyN6zS4E9zccariGR3jxcaWtq/1.json";
-        writeContract({
-            address: FactoryAddress,
-            abi: FactoryAbi,
-            functionName: "deployVolunteerNFT",
-            args: [uri, address],
-            chain: arbitrumSepolia,
-            account
-        })
-      } catch (error) {
-          console.error("Deployment error:", error);
-      }
-      NFTAddress = await readContract(config, {
-        address: FactoryAddress,
-        abi: FactoryAbi,
-        functionName: "getDeployedVolunteerNFT",
-        args: [address]
-      })
-
-      setNFT(NFTAddress)
-
-      const ethAmount = await getEthEquivalentOfUsdc(5);
-
-      try {
-        const account = address;
-        writeContract({
-            address: FactoryAddress,
-            abi: FactoryAbi,
-            functionName: "deployTokenDistributor",
-            args: [usdcAddressTestnet, NFT, BigInt(5), parseEther(`${ethAmount}`)],
-            chain: arbitrumSepolia,
-            account
-        })
-      } catch (error) {
-          console.error("Deployment error:", error);
-      }
-
-      distributorAddress = await readContract(config, {
-        address: FactoryAddress,
-        abi: FactoryAbi,
-        functionName: "getDeployedTokenDistributor",
-        args: [address]
-      })
-
-      setDistributor(distributorAddress)
-
-      setReady(true);
-    }
-
-    async function register() {
-      if (!address || !NFT) {
-        console.error('User not connected or NFT contract not deployed');
-        return;
-      }
-    
-      try {
-        // Check if user already has NFT with token ID 1
-        const balance = await readContract(config, {
-          address: NFT as `0x${string}`,
-          abi: NFTAbi,
-          functionName: 'balanceOf',
-          args: [address, BigInt(1)]
-        });
-    
-        if (balance > BigInt(0)) {
-          throw new Error('User already has an NFT for this event');
-        }
-    
-        // Mint new NFT for the user
-        writeContract({
-          address: NFT as `0x${string}`,
-          abi: NFTAbi,
-          functionName: 'mint',
-          args: [address, BigInt(1), BigInt(1)],
+        console.log("Initiating NFT deployment...")
+        const uri = "https://ipfs.io/ipfs/QmeSjSinHpPnmXmspMjwiXyN6zS4E9zccariGR3jxcaWtq/1.json"
+         let data = await writeContractAsync({
+          address: FactoryAddress,
+          abi: FactoryAbi,
+          functionName: "deployVolunteerNFT",
+          args: [uri, address],
           chain: arbitrumSepolia,
           account: address
-        });
-    
-        console.log('NFT minted successfully');
+        })
+  
+        console.log("NFT deployment initiated. Waiting for confirmation...")
+        // new Promise(resolve => setTimeout(resolve, 30000));
+        const nftReceipt = await waitForTransaction(config, {
+          hash: data,
+          confirmations: 2,
+        })
+        console.log("NFT deployment confirmed. Receipt:", nftReceipt)
+  
+        const NFTAddress = await readContract(config, {
+          address: FactoryAddress,
+          abi: FactoryAbi,
+          functionName: "getDeployedVolunteerNFT",
+          args: [address]
+        })
+        console.log('NFTAddress:', NFTAddress)
+        setNFT(NFTAddress)
+  
+        return NFTAddress
       } catch (error) {
-        console.error('Registration error:', error);
-      }
-    }
-
-    async function report() {
-      if (!address || !NFT) {
-        console.error('User not connected or NFT contract not deployed');
-        return;
-      }
-    
-      try {
-        // Check if user has NFT with token ID 1
-        const balance = await readContract(config, {
-          address: NFT as `0x${string}`,
-          abi: NFTAbi,
-          functionName: 'balanceOf',
-          args: [address, BigInt(1)]
-        });
-    
-        if (balance === BigInt(0)) {
-          throw new Error('Not yet registered');
-        }
-
-            // Set up event listener for TransferSingle event
-    const unwatch = watchContractEvent(config, 
-      {
-        address: NFT as `0x${string}`,
-        abi: NFTAbi,
-        eventName: 'TransferSingle',
-        onLogs(logs) { 
-          logs.forEach(log => {
-            const { args } = log;
-            if (args.id === BigInt(2)) {
-              console.log(`Token ID 2 minted to address: ${args.to}`);
-              setMintedAddresses(prev => [...prev, args.to]);
-            }
-          });
-          console.log('Logs changed!', logs) 
-        }, 
-      });
-      unwatch()
-    
-        // Mint token ID 2 for the user
-        writeContract({
-          address: NFT as `0x${string}`,
-          abi: NFTAbi,
-          functionName: 'mint',
-          args: [address, BigInt(2), BigInt(1)],
-          chain: arbitrumSepolia,
-          account: address
-        });
-    
-        console.log('Reward NFT (token ID 2) minted successfully');
-      } catch (error) {
-        console.error('Reward error:', error);
+        console.error("NFT deployment error:", error)
+        throw error
       }
     }
   
-    async function reward() {
-      if (!address || !distributor) {
-        console.error('User not connected or Distributor contract not deployed');
-        return;
-      }
-    
+    async function deployTokenDistributor(NFTAddress) {
       try {
-        // Create a dummy address array
-        const dummyAddresses: `0x${string}`[] = [
-          '0x1234567890123456789012345678901234567890',
-          '0x2345678901234567890123456789012345678901',
-          '0x3456789012345678901234567890123456789012'
-        ];
-    
-        // Call distributeTokensByUnit function
-        writeContract({
-          address: distributor as `0x${string}`,
-          abi: DistributorAbi,
-          functionName: 'distributeTokensByUnit',
-          args: [dummyAddresses], // mintedAddress
+        console.log("Initiating TokenDistributor deployment...")
+        const ethAmount = await getEthEquivalentOfUsdc(event.unitvalue)
+       let data = await writeContractAsync({
+          address: FactoryAddress,
+          abi: FactoryAbi,
+          functionName: "deployTokenDistributor",
+          args: [usdcAddressTestnet, NFTAddress as`0x${string}`, BigInt(event.unitvalue), parseEther(`${ethAmount}`)],
           chain: arbitrumSepolia,
           account: address
-        });
-    
-        console.log('Tokens distributed successfully');
+        })
+  
+        console.log("TokenDistributor deployment initiated. Waiting for confirmation...")
+        const distributorReceipt = await waitForTransaction(config, {
+          hash: data,
+          confirmations: 2,
+        })
+        console.log("TokenDistributor deployment confirmed. Receipt:", distributorReceipt)
+  
+        const distributorAddress = await readContract(config, {
+          address: FactoryAddress,
+          abi: FactoryAbi,
+          functionName: "getDeployedTokenDistributor",
+          args: [address]
+        })
+        console.log('distributorAddress:', distributorAddress)
+  
+        return distributorAddress
       } catch (error) {
-        console.error('Reward distribution error:', error);
+        console.error("TokenDistributor deployment error:", error)
+        throw error
       }
     }
+  
+    async function deploy() {
+      if (chainId !== arbitrumSepolia.id) {
+        await switchChain(config, {chainId: arbitrumSepolia.id})
+      }
+      try {
+        const NFTAddress = await deployNFT()
+        const distributorAddress = await deployTokenDistributor(NFTAddress)
+  
+        console.log("Both deployments successful:", { NFTAddress, distributorAddress })
 
+        const erc1155 = {
+          chain: "arbitrumSepolia",
+          address: NFTAddress as string,
+          owner: address as string,
+          admin: address as string,
+          contract: '1155',
+        }
+        
+        await newContract(erc1155)
+
+        const v2e = {
+          chain: "arbitrumSepolia",
+          address: distributorAddress as string,
+          owner: address as string,
+          admin: address as string,
+          contract: 'V2E',
+        }
+        await newContract(v2e)
+  
+        setReady(true)
+      } catch (error) {
+        console.error("Deployment process failed:", error)
+        throw error
+      }
+    }
+  
   return (
     <Dashboard>
       <Sidebar />
