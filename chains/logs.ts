@@ -20,9 +20,9 @@ export async function getRegisteredAddresses(contract){
 }
 
 // Get all reported addresses in 1155 contract for token #2
-export async function getReportedAddresses(contract){
+export async function getReportedAddresses(contract, block){
   const topics = ['2'] // TODO: get topic from contract.event
-  const block = '0x43fb584'
+  // const block = '0x43fb584'
   const logs = await getLogs(contract, topics, block)
   if(logs?.error){
     return {success:false, error: logs?.error?.message || 'Error fetching logs'}
