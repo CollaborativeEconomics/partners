@@ -5,22 +5,31 @@ import Script from 'next/script'
 import Title from 'components/title'
 import ButtonBlue from 'components/buttonblue'
 import { getEventById } from 'utils/registry'
+import { cleanAddress } from 'utils/address'
 import styles from 'styles/dashboard.module.css'
 import { BrowserQRCodeReader } from '@zxing/library';
 import TextInput from 'components/form/textinput'
+import { useAccount, useWriteContract } from 'wagmi'
+import { readContract, switchChain, waitForTransaction } from '@wagmi/core'
+import { arbitrumSepolia } from 'wagmi/chains'
+import { config } from 'chains/config'
+import { NFTAbi } from 'chains/contracts/volunteers/abis'
+import { getContract } from 'utils/registry'
 
 export async function getServerSideProps(context) {
   const id = context.query.id
   const event = await getEventById(id)
-  return { props: { id, event } }
+  return { props: { id, event} }
 }
 
 export default function Page({id, event}) {
   console.log('EVENT ID', id)
   const [device, setDevice] = useState(null)
   const [message, setMessage] = useState('Scan the QR-CODE to register for the event')
+  const account = useAccount()
+  const { data: hash, writeContract } = useWriteContract({ config});
 
-  const { register, watch } = useForm({defaultValues: { address: '' }})
+  const { register, watch, setValue } = useForm({defaultValues: { address: '' }})
   const [address] = watch(['address'])
 
   console.log('Loading scanner')
@@ -38,6 +47,7 @@ export default function Page({id, event}) {
       console.log('Result', result)
       const address = result.getText()
       setMessage('Wallet '+address)
+      setValue('address', address);
       const input = document.getElementById('address') as HTMLInputElement
       input.value = address
       // We got the wallet address
@@ -64,9 +74,62 @@ export default function Page({id, event}) {
     }
   }
 
+
   async function onMint() {
-    console.log('MINT')
-    // TODO: Lawal's magic goes here
+    const nft: `0x${string}` = "0x950728DE32cC1bF223D3Fe51B0a44A4A1C868A72"
+    console.log('account', account.address)
+    // const contract = await getContract(`${id}`, "arbitrum", "testnet", "1155")
+    // const nft = contract.address
+
+    if (!account?.address || !nft) {
+      console.error('User not connected or NFT contract not deployed');
+      setMessage('Please Connect Wallet in Metamask');
+      return;
+    }
+
+    console.log('account', account)
+
+    if (account.chainId !== arbitrumSepolia.id) {
+      await switchChain(config, {chainId: arbitrumSepolia.id})
+    }
+
+    console.log("address", address)
+    const cleanedAddress = cleanAddress(address);
+  
+    try {
+      // Check if user already has NFT with token ID 1
+      const balance = await readContract(config, {
+        address: nft,
+        abi: NFTAbi,
+        functionName: 'balanceOf',
+        args: [cleanedAddress as `0x${string}`, BigInt(1)]
+      });
+  
+      if (balance > BigInt(0)) {
+        // throw new Error('User already registeredfor this event');
+        setMessage('User already registered for this event');
+        return;
+      }
+  
+      // Mint new NFT for the user
+      writeContract({
+        address: nft,
+        abi: NFTAbi,
+        functionName: 'mint',
+        args: [cleanedAddress as `0x${string}`, BigInt(1), BigInt(1)],
+        chain: arbitrumSepolia,
+        account: account.address
+      });
+
+      const nftReceipt = await waitForTransaction(config, {
+        hash,
+        confirmations: 2,
+      })
+  
+      console.log('NFT minted successfully');
+    } catch (error) {
+      console.error('Registration error:', error);
+    }
   }
 
   return (
