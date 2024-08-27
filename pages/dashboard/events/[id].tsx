@@ -20,23 +20,46 @@ import { arbitrumSepolia } from 'wagmi/chains'
 import { config } from 'chains/config'
 import { FactoryAbi } from 'chains/contracts/volunteers/abis'
 import { parseEther } from 'viem'
-import { newContract } from 'utils/registry'
+//import { newContract } from 'utils/registry'
 import { metaMask } from 'wagmi/connectors'
 import { net } from 'web3'
+import { apiFetch, apiPost } from 'utils/api'
 
 export async function getServerSideProps(context) {
   const id = context.query.id
   const event = await getEventById(id)
+  const resNFT = await getContract(id, 'arbitrum', 'testnet', '1155')
+  const resDST = await getContract(id, 'arbitrum', 'testnet', 'V2E')
+  const contractNFT  = (resNFT.success && resNFT.result.length>0) ? resNFT.result[0] : null
+  const contractDST  = (resDST.success && resDST.result.length>0) ? resDST.result[0] : null
+  console.log('NFT', contractNFT)
+  console.log('DST', contractDST)
   //const media = []
   const media = event.media?.map((it:any)=>it.media) || [] // flatten list
   media.unshift(event.image) // main image to the top
   const volunteers = await getVolunteersByEvent(id)
   return {
-    props: { id, event, media, volunteers }
+    props: { id, event, media, volunteers, contractNFT, contractDST }
   }
 }
 
-export default function Event({id, event, media, volunteers}){
+// Server calls
+// TODO: may move to utils
+
+async function newContract(data){
+  // TODO: we may validate if needed
+  const info = await apiPost('contracts', data)
+  return info
+}
+
+async function getContract(entity_id, chain, network, contract_type){
+  const query = `contracts?entity_id=${entity_id}&chain=${chain}&network=${network}&contract_type=${contract_type}`
+  console.log('QUERY', query)
+  const info = await apiFetch(query)
+  return info
+}
+
+export default function Event({id, event, media, volunteers, contractNFT, contractDST}){
   console.log('EVENTID', id)
   console.log('VOLUNTEERS', volunteers.length)
   var total = 0
@@ -47,9 +70,12 @@ export default function Event({id, event, media, volunteers}){
   const { data: hash, writeContractAsync } = useWriteContract({ config});
 
   // State Variables
+  const started = (contractNFT && contractDST)
+  const [eventStarted, setEventStarted] = useState(started)
   const [ready, setReady] = useState(false)
   const [distributor, setDistributor] = useState(null)
   const [NFT, setNFT] = useState(null)
+  const [message, setMessage] = useState('You will sign two transactions with your wallet')
 
   function shortDate(d){
     const opt:Intl.DateTimeFormatOptions = {
@@ -90,6 +116,7 @@ export default function Event({id, event, media, volunteers}){
     async function deployNFT() {
       try {
         console.log("Initiating NFT deployment...")
+        setMessage("Initiating NFT deployment, please wait...")
         const uri = "https://ipfs.io/ipfs/QmeSjSinHpPnmXmspMjwiXyN6zS4E9zccariGR3jxcaWtq/1.json"
          let data = await writeContractAsync({
           address: FactoryAddress,
@@ -107,7 +134,8 @@ export default function Event({id, event, media, volunteers}){
           confirmations: 2,
         })
         console.log("NFT deployment confirmed. Receipt:", nftReceipt)
-        NFTBlockNumber = nftReceipt.blockNumber
+        setMessage("NFT deployment confirmed")
+        NFTBlockNumber = nftReceipt.blockNumber.toString()
   
         const NFTAddress = await readContract(config, {
           address: FactoryAddress,
@@ -128,8 +156,9 @@ export default function Event({id, event, media, volunteers}){
     async function deployTokenDistributor(NFTAddress) {
       try {
         console.log("Initiating TokenDistributor deployment...")
+        setMessage("Initiating Distributor deployment, please wait...")
         const ethAmount = await getEthEquivalentOfUsdc(event.unitvalue)
-       let data = await writeContractAsync({
+        let data = await writeContractAsync({
           address: FactoryAddress,
           abi: FactoryAbi,
           functionName: "deployTokenDistributor",
@@ -144,7 +173,8 @@ export default function Event({id, event, media, volunteers}){
           confirmations: 2,
         })
         console.log("TokenDistributor deployment confirmed. Receipt:", distributorReceipt)
-        distributorBlockNumber = distributorReceipt.blockNumber
+        setMessage("Distributor deployment confirmed")
+        distributorBlockNumber = distributorReceipt.blockNumber.toString()
   
         const distributorAddress = await readContract(config, {
           address: FactoryAddress,
@@ -182,7 +212,7 @@ export default function Event({id, event, media, volunteers}){
           contract_address: NFTAddress,
           entity_id: id as string,
           admin_wallet_address: address as string,
-          contact_type: "1155",
+          contract_type: "1155",
           network: "testnet",
           start_block: NFTBlockNumber,
         }
@@ -195,7 +225,7 @@ export default function Event({id, event, media, volunteers}){
           contract_address: distributorAddress as string,
           entity_id: id as string,
           admin_wallet_address: address as string,
-          contact_type: "V2E",
+          contract_type: "V2E",
           network: "testnet",
           start_block: distributorBlockNumber,
         }
@@ -203,6 +233,7 @@ export default function Event({id, event, media, volunteers}){
         console.log('INFO2', info2)
   
         setReady(true)
+        setEventStarted(true)
       } catch (error) {
         console.error("Deployment process failed:", error)
         throw error
@@ -223,6 +254,7 @@ export default function Event({id, event, media, volunteers}){
             <h1 className="mt-4 text-4xl">{event.name}</h1>
             <p className="">{event.description}</p>
           </div>
+          {/*
           <div className="w-full p-4 mt-2">
             <h1 className="my-2">Volunteers</h1>
             <table className="w-full">
@@ -248,14 +280,20 @@ export default function Event({id, event, media, volunteers}){
               </tfoot>
             </table>
           </div>
-          <div className="w-full flex flex-row justify-between mb-8">
-            <ButtonBlue text="START EVENT" onClick={deploy}/>
-          </div>
-          <div className="w-full flex flex-row justify-between mb-8">
-            <LinkButton href={`/dashboard/events/register/${id}`} text="REGISTER" />
-            <LinkButton href={`/dashboard/events/report/${id}`} text="REPORT" />
-            <LinkButton href={`/dashboard/events/reward/${id}`} text="REWARD" />
-          </div>
+          */}
+          {!eventStarted && 
+            <div className="w-full flex flex-col justify-center align-center items-center mb-8">
+              <ButtonBlue text="START EVENT" onClick={deploy}/>
+              <p>{message}</p>
+            </div>
+          }
+          {eventStarted && 
+            <div className="w-full flex flex-row justify-between mb-8">
+              <LinkButton href={`/dashboard/events/register/${id}`} text="REGISTER" />
+              <LinkButton href={`/dashboard/events/report/${id}`} text="REPORT" />
+              <LinkButton href={`/dashboard/events/reward/${id}`} text="REWARD" />
+            </div>
+          }
         </div>
       </div>
     </Dashboard>
