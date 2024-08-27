@@ -81,14 +81,18 @@ export default function Page({id, event}) {
     // const contract = await getContract(`${id}`, "arbitrum", "testnet", "1155")
     // const nft = contract.address
 
+    if (!account?.address || !nft) {
+      console.error('User not connected or NFT contract not deployed');
+      setMessage('Please Connect Wallet in Metamask');
+      return;
+    }
+
+    console.log('account', account)
+
     if (account.chainId !== arbitrumSepolia.id) {
       await switchChain(config, {chainId: arbitrumSepolia.id})
     }
 
-    if (!account || !nft) {
-      console.error('User not connected or NFT contract not deployed');
-      return;
-    }
     console.log("address", address)
     const cleanedAddress = cleanAddress(address);
   
