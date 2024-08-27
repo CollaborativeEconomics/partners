@@ -14,6 +14,7 @@ import { readContract, watchContractEvent, switchChain } from '@wagmi/core'
 import { arbitrumSepolia } from 'wagmi/chains'
 import { config } from 'chains/config'
 import { NFTAbi } from 'chains/contracts/volunteers/abis'
+import { getContract } from 'utils/registry'
 
 export async function getServerSideProps(context) {
   const id = context.query.id
@@ -32,7 +33,6 @@ export default function Page({id, event }) {
   const unitlabel = event?.unitlabel || ''
   const [amount, setAmount] = useState(payrate)
   const { data: hash, writeContract } = useWriteContract({ config});
-  const { connectors, connect } = useConnect()
   const account = useAccount()
 
 
@@ -82,6 +82,8 @@ export default function Page({id, event }) {
   async function onMint() {
     const nft: `0x${string}` = "0x950728DE32cC1bF223D3Fe51B0a44A4A1C868A72"
     console.log('units', units)
+    // const contract = await getContract(`${id}`, "arbitrum", "testnet", "1155")
+    // const nft = contract.address
 
     if (account.chainId !== arbitrumSepolia.id) {
       await switchChain(config, {chainId: arbitrumSepolia.id})
@@ -89,6 +91,7 @@ export default function Page({id, event }) {
 
     if (!account || !nft) {
       console.error('User not connected or NFT contract not deployed');
+      setMessage('User not connected or NFT contract not deployed');
       return;
     }
   
@@ -106,27 +109,28 @@ export default function Page({id, event }) {
       });
   
       if (balance === BigInt(0)) {
-        throw new Error('Not yet registered');
+        // throw new Error('Not yet registered');
+        setMessage('Not yet registered');
       }
 
           // Set up event listener for TransferSingle event
-  const unwatch = watchContractEvent(config, 
-    {
-      address: nft,
-      abi: NFTAbi,
-      eventName: 'TransferSingle',
-      onLogs(logs) { 
-        logs.forEach(log => {
-          const { args } = log;
-          if (args.id === BigInt(2)) {
-            console.log(`Token ID 2 minted to address: ${args.to}`);
-            setMintedAddresses(prev => [...prev, args.to]);
-          }
-        });
-        console.log('Logs changed!', logs) 
-      }, 
-    });
-    unwatch()
+  // const unwatch = watchContractEvent(config, 
+  //   {
+  //     address: nft,
+  //     abi: NFTAbi,
+  //     eventName: 'TransferSingle',
+  //     onLogs(logs) { 
+  //       logs.forEach(log => {
+  //         const { args } = log;
+  //         if (args.id === BigInt(2)) {
+  //           console.log(`Token ID 2 minted to address: ${args.to}`);
+  //           setMintedAddresses(prev => [...prev, args.to]);
+  //         }
+  //       });
+  //       console.log('Logs changed!', logs) 
+  //     }, 
+  //   });
+  //   unwatch()
   
       // Mint token ID 2 for the user
       writeContract({
@@ -139,6 +143,7 @@ export default function Page({id, event }) {
       });
   
       console.log('Reward NFT (token ID 2) minted successfully');
+      setMessage('Reward NFT minted successfully');
     } catch (error) {
       console.error('Reward error:', error);
     }

@@ -15,12 +15,14 @@ import styles from 'styles/dashboard.module.css'
 import ButtonBlue from 'components/buttonblue'
 import LinkButton from 'components/linkbutton'
 import { useConnect, useAccount, useWriteContract, useSimulateContract} from 'wagmi'
-import { readContract, connect, switchChain, waitForTransaction} from '@wagmi/core'
+import { readContract, switchChain, waitForTransaction} from '@wagmi/core'
 import { arbitrumSepolia } from 'wagmi/chains'
 import { config } from 'chains/config'
 import { FactoryAbi } from 'chains/contracts/volunteers/abis'
 import { parseEther } from 'viem'
 import { newContract } from 'utils/registry'
+import { metaMask } from 'wagmi/connectors'
+import { net } from 'web3'
 
 export async function getServerSideProps(context) {
   const id = context.query.id
@@ -40,9 +42,9 @@ export default function Event({id, event, media, volunteers}){
   var total = 0
   let NFTAddress: `0x${string}`;
   let distributorAddress: `0x${string}`;
-  // const { connectors, connect } = useConnect()
+  const { connectors, connect, data: connection, isSuccess } = useConnect({ config })
   const { chainId, address } = useAccount()
-  const { data, writeContractAsync } = useWriteContract({ config});
+  const { data: hash, writeContractAsync } = useWriteContract({ config});
 
   // State Variables
   const [ready, setReady] = useState(false)
@@ -80,8 +82,10 @@ export default function Event({id, event, media, volunteers}){
     }
   }
   
-    const FactoryAddress = "0xA14F3dD410021c7f05Ca1aEf7aDc9C86943E839f"
-    const usdcAddressTestnet = "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d"
+  const FactoryAddress = "0xA14F3dD410021c7f05Ca1aEf7aDc9C86943E839f"
+  const usdcAddressTestnet = "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d"
+  let NFTBlockNumber: number;
+  let distributorBlockNumber: number;
   
     async function deployNFT() {
       try {
@@ -103,6 +107,7 @@ export default function Event({id, event, media, volunteers}){
           confirmations: 2,
         })
         console.log("NFT deployment confirmed. Receipt:", nftReceipt)
+        NFTBlockNumber = nftReceipt.blockNumber
   
         const NFTAddress = await readContract(config, {
           address: FactoryAddress,
@@ -139,6 +144,7 @@ export default function Event({id, event, media, volunteers}){
           confirmations: 2,
         })
         console.log("TokenDistributor deployment confirmed. Receipt:", distributorReceipt)
+        distributorBlockNumber = distributorReceipt.blockNumber
   
         const distributorAddress = await readContract(config, {
           address: FactoryAddress,
@@ -156,9 +162,15 @@ export default function Event({id, event, media, volunteers}){
     }
   
     async function deploy() {
-      if (chainId !== arbitrumSepolia.id) {
-        await switchChain(config, {chainId: arbitrumSepolia.id})
+      try {
+        if (chainId !== arbitrumSepolia.id) {
+          await switchChain(config, {chainId: arbitrumSepolia.id})
+        }
+      } catch (error) {
+        console.error('Error switching chain:', error)
+        throw error
       }
+
       try {
         const NFTAddress = await deployNFT()
         const distributorAddress = await deployTokenDistributor(NFTAddress)
@@ -166,23 +178,29 @@ export default function Event({id, event, media, volunteers}){
         console.log("Both deployments successful:", { NFTAddress, distributorAddress })
 
         const erc1155 = {
-          chain: "arbitrumSepolia",
-          address: NFTAddress as string,
-          owner: address as string,
+          chain: "arbitrum",
+          network: "testnet",
+          address: NFTAddress,
           admin: address as string,
-          contract: '1155',
+          entity_id: id as string,
+          contact_type: "1155",
+          start_block: NFTBlockNumber,
         }
         
-        await newContract(erc1155)
+       const info = await newContract(erc1155)
+       console.log('INFO', info)
 
         const v2e = {
-          chain: "arbitrumSepolia",
+          chain: "arbitrum",
+          network: "testnet",
           address: distributorAddress as string,
-          owner: address as string,
           admin: address as string,
-          contract: 'V2E',
+          entity_id: id as string,
+          contact_type: "V2E",
+          start_block: distributorBlockNumber,
         }
-        await newContract(v2e)
+        const info2 = await newContract(v2e)
+        console.log('INFO2', info2)
   
         setReady(true)
       } catch (error) {

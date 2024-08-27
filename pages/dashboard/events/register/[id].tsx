@@ -10,10 +10,11 @@ import styles from 'styles/dashboard.module.css'
 import { BrowserQRCodeReader } from '@zxing/library';
 import TextInput from 'components/form/textinput'
 import { useAccount, useWriteContract } from 'wagmi'
-import { readContract, watchContractEvent, switchChain } from '@wagmi/core'
+import { readContract, watchContractEvent, switchChain, waitForTransaction } from '@wagmi/core'
 import { arbitrumSepolia } from 'wagmi/chains'
 import { config } from 'chains/config'
 import { NFTAbi } from 'chains/contracts/volunteers/abis'
+import { getContract } from 'utils/registry'
 
 export async function getServerSideProps(context) {
   const id = context.query.id
@@ -76,6 +77,9 @@ export default function Page({id, event}) {
 
   async function onMint() {
     const nft: `0x${string}` = "0x950728DE32cC1bF223D3Fe51B0a44A4A1C868A72"
+    console.log('account', account.address)
+    // const contract = await getContract(`${id}`, "arbitrum", "testnet", "1155")
+    // const nft = contract.address
 
     if (account.chainId !== arbitrumSepolia.id) {
       await switchChain(config, {chainId: arbitrumSepolia.id})
@@ -98,7 +102,9 @@ export default function Page({id, event}) {
       });
   
       if (balance > BigInt(0)) {
-        throw new Error('User already has an NFT for this event');
+        // throw new Error('User already registeredfor this event');
+        setMessage('User already registered for this event');
+        return;
       }
   
       // Mint new NFT for the user
@@ -110,6 +116,11 @@ export default function Page({id, event}) {
         chain: arbitrumSepolia,
         account: account.address
       });
+
+      const nftReceipt = await waitForTransaction(config, {
+        hash,
+        confirmations: 2,
+      })
   
       console.log('NFT minted successfully');
     } catch (error) {

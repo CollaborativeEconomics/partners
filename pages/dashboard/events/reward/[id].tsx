@@ -7,9 +7,12 @@ import ButtonBlue from 'components/buttonblue'
 import { getEventById, getVolunteersByEvent } from 'utils/registry'
 import styles from 'styles/dashboard.module.css'
 import { Connector, useConnect, useAccount, useWriteContract } from 'wagmi'
+import { waitForTransactionReceipt } from '@wagmi/core'
 import { arbitrumSepolia } from 'wagmi/chains'
 import { config } from 'chains/config'
 import { DistributorAbi } from 'chains/contracts/volunteers/abis'
+import { getReportedAddresses } from 'chains/logs'
+import { getContract } from 'utils/registry'
 
 export async function getServerSideProps(context) {
   const id = context.query.id
@@ -33,25 +36,36 @@ export default function Page({id, event, volunteers, account, mintedAddresses}) 
 
   async function onMint() {
     const distributor: `0x${string}` = "0xE9E27A9Ca49d285611949260e05CB82b5989eCEC"
-    connectors.map((connector) => connect({connector}))
+    const nft: `0x${string}` = "0x950728DE32cC1bF223D3Fe51B0a44A4A1C868A72"
+    // const contract = await getContract(`${id}`, "arbitrum", "testnet", "V2E")
+    // const distributor = contract.address
+    // const nft = await getContract(`${id}`, "arbitrum", "testnet", "1155").address
+    
+    const volunteers = await getReportedAddresses(nft)
     if (!account || !distributor) {
       console.error('User not connected or Distributor contract not deployed');
+      setMessage('User not connected or Distributor contract not deployed');
       return;
     }
   
     try {
-  
       // Call distributeTokensByUnit function
       writeContract({
         address: distributor as `0x${string}`,
         abi: DistributorAbi,
         functionName: 'distributeTokensByUnit',
-        args: [mintedAddresses],
+        args: [volunteers.data],
         chain: arbitrumSepolia,
         account: account
       });
+
+      const distributionReceipt = await waitForTransactionReceipt(config, {
+        hash,
+        confirmations: 2
+      })
   
       console.log('Tokens distributed successfully');
+      setMessage('Tokens distributed successfully');
     } catch (error) {
       console.error('Reward distribution error:', error);
     }
