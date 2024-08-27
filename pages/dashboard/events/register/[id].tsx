@@ -10,7 +10,7 @@ import styles from 'styles/dashboard.module.css'
 import { BrowserQRCodeReader } from '@zxing/library';
 import TextInput from 'components/form/textinput'
 import { useAccount, useWriteContract } from 'wagmi'
-import { readContract, watchContractEvent, switchChain, waitForTransaction } from '@wagmi/core'
+import { readContract, switchChain, waitForTransaction } from '@wagmi/core'
 import { arbitrumSepolia } from 'wagmi/chains'
 import { config } from 'chains/config'
 import { NFTAbi } from 'chains/contracts/volunteers/abis'

@@ -25,7 +25,6 @@ export async function getServerSideProps(context) {
 export default function Page({id, event }) {
   console.log('EVENT ID', id)
   const [device, setDevice] = useState(null)
-  const [mintedAddresses, setMintedAddresses] = useState<`0x${string}`[]>([])
   const [message, setMessage] = useState('Scan the QR-CODE to report work delivered')
   const {register, watch, setValue} = useForm({defaultValues: { address: '', units: '' }})
   const [address, units] = watch(['address','units'])
@@ -112,25 +111,6 @@ export default function Page({id, event }) {
         // throw new Error('Not yet registered');
         setMessage('Not yet registered');
       }
-
-          // Set up event listener for TransferSingle event
-  // const unwatch = watchContractEvent(config, 
-  //   {
-  //     address: nft,
-  //     abi: NFTAbi,
-  //     eventName: 'TransferSingle',
-  //     onLogs(logs) { 
-  //       logs.forEach(log => {
-  //         const { args } = log;
-  //         if (args.id === BigInt(2)) {
-  //           console.log(`Token ID 2 minted to address: ${args.to}`);
-  //           setMintedAddresses(prev => [...prev, args.to]);
-  //         }
-  //       });
-  //       console.log('Logs changed!', logs) 
-  //     }, 
-  //   });
-  //   unwatch()
   
       // Mint token ID 2 for the user
       writeContract({
