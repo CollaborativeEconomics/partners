@@ -39,9 +39,11 @@ export default function Page({id, event, volunteers, account, mintedAddresses}) 
     const nft: `0x${string}` = "0x950728DE32cC1bF223D3Fe51B0a44A4A1C868A72"
     // const contract = await getContract(`${id}`, "arbitrum", "testnet", "V2E")
     // const distributor = contract.address
-    // const nft = await getContract(`${id}`, "arbitrum", "testnet", "1155").address
-    
-    const volunteers = await getReportedAddresses(nft)
+    // const nftContract = await getContract(`${id}`, "arbitrum", "testnet", "1155")
+    // const nft = nftContract.address
+    // const block = nftContract.block
+
+    // const volunteers = await getReportedAddresses(nft, block)
     if (!account || !distributor) {
       console.error('User not connected or Distributor contract not deployed');
       setMessage('User not connected or Distributor contract not deployed');
