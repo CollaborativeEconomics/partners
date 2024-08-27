@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import Image from 'next/image'
-import Script from 'next/script'
+import Dashboard from 'components/dashboard'
+import Sidebar from 'components/sidebar'
 import Title from 'components/title'
 import ButtonBlue from 'components/buttonblue'
 import { getEventById, getVolunteersByEvent } from 'utils/registry'
@@ -28,40 +29,43 @@ export default function Page({id, event, volunteers}) {
   }
 
   return (
-    <div className='mt-8'>
-      <div className={styles.mainBox}>
-        <Title text="VOLUNTEER TO EARN" />
-        <h1>{event.name}</h1>
-        <div className="w-full p-4 mt-2">
-          <h1 className="my-2">Volunteers</h1>
-          <table className="w-full">
-            <thead>
-              <tr className="text-slate-400"><th align="left">Address</th><th align="right">Payment</th></tr>
-            </thead>
-            <tbody className="border-t-2">
-            {volunteers?.map((item)=>{
-              //console.log('ITEM')
-              total += parseInt(item.amount)
-              return (
-                <tr key={item.id}>
-                  <td>{item.address.toLowerCase()}</td>
-                  <td align="right">${item.amount}</td>
+    <Dashboard>
+      <Sidebar />
+      <div className={styles.content}>
+        <div className={styles.mainBox}>
+          <Title text="VOLUNTEER TO EARN" />
+          <h1>{event.name}</h1>
+          <div className="w-full p-4 mt-2">
+            <h1 className="my-2">Volunteers</h1>
+            <table className="w-full">
+              <thead>
+                <tr className="text-slate-400"><th align="left">Address</th><th align="right">Payment</th></tr>
+              </thead>
+              <tbody className="border-t-2">
+              {volunteers?.map((item)=>{
+                //console.log('ITEM')
+                total += parseInt(item.amount)
+                return (
+                  <tr key={item.id}>
+                    <td>{item.address.toLowerCase()}</td>
+                    <td align="right">${item.amount}</td>
+                  </tr>
+                )
+              })}
+              </tbody>
+              <tfoot className="border-t-2">
+                <tr>
+                  <td colSpan={2} align="right">Total ${total}</td>
                 </tr>
-              )
-            })}
-            </tbody>
-            <tfoot className="border-t-2">
-              <tr>
-                <td colSpan={2} align="right">Total ${total}</td>
-              </tr>
-            </tfoot>
-          </table>
+              </tfoot>
+            </table>
+          </div>
+          <div className="w-full mb-2 flex flex-row justify-between">
+            <ButtonBlue id="buttonSubmit" text="REWARD VOLUNTEERS" onClick={onMint} />
+          </div>
+          <p id="message" className="mb-6 center">{message}</p>
         </div>
-        <div className="w-full mb-2 flex flex-row justify-between">
-          <ButtonBlue id="buttonSubmit" text="REWARD VOLUNTEERS" onClick={onMint} />
-        </div>
-        <p id="message" className="mb-6 center">{message}</p>
       </div>
-    </div>
+    </Dashboard>
   )
 }
