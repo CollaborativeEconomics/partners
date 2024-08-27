@@ -179,11 +179,11 @@ export default function Event({id, event, media, volunteers}){
 
         const erc1155 = {
           chain: "arbitrum",
-          network: "testnet",
-          address: NFTAddress,
-          admin: address as string,
+          contract_address: NFTAddress,
           entity_id: id as string,
+          admin_wallet_address: address as string,
           contact_type: "1155",
+          network: "testnet",
           start_block: NFTBlockNumber,
         }
         
@@ -192,11 +192,11 @@ export default function Event({id, event, media, volunteers}){
 
         const v2e = {
           chain: "arbitrum",
-          network: "testnet",
-          address: distributorAddress as string,
-          admin: address as string,
+          contract_address: distributorAddress as string,
           entity_id: id as string,
+          admin_wallet_address: address as string,
           contact_type: "V2E",
+          network: "testnet",
           start_block: distributorBlockNumber,
         }
         const info2 = await newContract(v2e)
