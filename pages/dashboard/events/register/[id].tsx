@@ -19,15 +19,23 @@ import { getContract } from 'utils/registry'
 export async function getServerSideProps(context) {
   const id = context.query.id
   const event = await getEventById(id)
-  return { props: { id, event} }
+  const redirect = { redirect: { destination: '/dashboard/events', permanent: false } }
+  if(!event){ return redirect }
+  const resNFT = await getContract(id, 'arbitrum', 'testnet', '1155')
+  const contractNFT  = (resNFT.success && resNFT.result.length>0) ? resNFT.result[0] : null
+  console.log('NFT', contractNFT)
+  if(!contractNFT){ return redirect }
+  return { props: { id, event, contractNFT } }
 }
 
-export default function Page({id, event}) {
+export default function Page({id, event, contractNFT}) {
   console.log('EVENT ID', id)
   const [device, setDevice] = useState(null)
   const [message, setMessage] = useState('Scan the QR-CODE to register for the event')
   const account = useAccount()
   const { data: hash, writeContract } = useWriteContract({ config});
+  // TODO: move to config file
+  const currentChain = arbitrumSepolia
 
   const { register, watch, setValue } = useForm({defaultValues: { address: '' }})
   const [address] = watch(['address'])
@@ -76,10 +84,9 @@ export default function Page({id, event}) {
 
 
   async function onMint() {
-    const nft: `0x${string}` = "0x950728DE32cC1bF223D3Fe51B0a44A4A1C868A72"
+    //const nft: `0x${string}` = "0x950728DE32cC1bF223D3Fe51B0a44A4A1C868A72"
+    const nft: `0x${string}` = contractNFT.contract_address
     console.log('account', account.address)
-    // const contract = await getContract(`${id}`, "arbitrum", "testnet", "1155")
-    // const nft = contract.address
 
     if (!account?.address || !nft) {
       console.error('User not connected or NFT contract not deployed');
@@ -87,10 +94,12 @@ export default function Page({id, event}) {
       return;
     }
 
+    setMessage('Minting NFT, please wait...');
+
     console.log('account', account)
 
-    if (account.chainId !== arbitrumSepolia.id) {
-      await switchChain(config, {chainId: arbitrumSepolia.id})
+    if (account.chainId !== currentChain.id) {
+      await switchChain(config, {chainId: currentChain.id})
     }
 
     console.log("address", address)
@@ -117,7 +126,7 @@ export default function Page({id, event}) {
         abi: NFTAbi,
         functionName: 'mint',
         args: [cleanedAddress as `0x${string}`, BigInt(1), BigInt(1)],
-        chain: arbitrumSepolia,
+        chain: currentChain,
         account: account.address
       });
 
@@ -127,8 +136,10 @@ export default function Page({id, event}) {
       })
   
       console.log('NFT minted successfully');
+      setMessage('NFT minted successfully');
     } catch (error) {
       console.error('Registration error:', error);
+      setMessage('Registration error - '+error.message);
     }
   }
 

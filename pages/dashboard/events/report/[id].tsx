@@ -19,10 +19,16 @@ import { getContract } from 'utils/registry'
 export async function getServerSideProps(context) {
   const id = context.query.id
   const event = await getEventById(id)
-  return { props: { id, event } }
+  const redirect = { redirect: { destination: '/dashboard/events', permanent: false } }
+  if(!event){ return redirect }
+  const resNFT = await getContract(id, 'arbitrum', 'testnet', '1155')
+  const contractNFT  = (resNFT.success && resNFT.result.length>0) ? resNFT.result[0] : null
+  console.log('NFT', contractNFT)
+  if(!contractNFT){ return redirect }
+  return { props: { id, event, contractNFT } }
 }
 
-export default function Page({id, event }) {
+export default function Page({id, event, contractNFT }) {
   console.log('EVENT ID', id)
   const [device, setDevice] = useState(null)
   const [message, setMessage] = useState('Scan the QR-CODE to report work delivered')
@@ -33,6 +39,8 @@ export default function Page({id, event }) {
   const [amount, setAmount] = useState(payrate)
   const { data: hash, writeContract } = useWriteContract({ config});
   const account = useAccount()
+  // TODO: move to config file
+  const currentChain = arbitrumSepolia
 
 
   console.log('Loading scanner')
@@ -79,23 +87,21 @@ export default function Page({id, event }) {
   }
 
   async function onMint() {
-    const nft: `0x${string}` = "0x950728DE32cC1bF223D3Fe51B0a44A4A1C868A72"
+    const nft: `0x${string}` = contractNFT.contract_address
+    //const nft: `0x${string}` = "0x950728DE32cC1bF223D3Fe51B0a44A4A1C868A72"
     console.log('units', units)
-    // const contract = await getContract(`${id}`, "arbitrum", "testnet", "1155")
-    // const nft = contract.address
     
-    if (!account.isConnected || !nft) {
-      console.error('User not connected or NFT contract not deployed');
-      setMessage('Please connect wallet in Metamask');
+    if (!account.isConnected) {
+      console.error('User not connected');
+      setMessage('Please connect Metamask wallet');
       return;
     }
-    if (account.chainId !== arbitrumSepolia.id) {
-      await switchChain(config, {chainId: arbitrumSepolia.id})
+    if (account.chainId !== currentChain.id) {
+      await switchChain(config, {chainId: currentChain.id})
     }
 
-  
+    setMessage('Minting reward NFT, please wait...');
     console.log("address", address)
-
     const cleanedAddress = cleanAddress(address);
 
     try {
@@ -109,7 +115,7 @@ export default function Page({id, event }) {
   
       if (balance === BigInt(0)) {
         // throw new Error('Not yet registered');
-        setMessage('Not yet registered');
+        setMessage('Error: Volunteer not yet registered');
       }
   
       // Mint token ID 2 for the user
@@ -118,7 +124,7 @@ export default function Page({id, event }) {
         abi: NFTAbi,
         functionName: 'mint',
         args: [cleanedAddress as `0x${string}`, BigInt(2), BigInt(units)],
-        chain: arbitrumSepolia,
+        chain: currentChain,
         account: account.address
       });
   
@@ -126,6 +132,7 @@ export default function Page({id, event }) {
       setMessage('Reward NFT minted successfully');
     } catch (error) {
       console.error('Reward error:', error);
+      setMessage('Reward error - '+error.message);
     }
   }
 

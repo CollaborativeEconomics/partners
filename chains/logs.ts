@@ -1,7 +1,6 @@
 // Get all registered addresses in 1155 contract for token #1
-export async function getRegisteredAddresses(contract){
+export async function getRegisteredAddresses(contract, block){
   const topics = ['1'] // TODO: get topic from contract.event
-  const block = '0x43fb584' // TODO: get from db contracts table
   const logs = await getLogs(contract, topics, block)
   if(logs?.error){
     return {success:false, error: logs?.error?.message || 'Error fetching logs'}
@@ -9,7 +8,7 @@ export async function getRegisteredAddresses(contract){
   // Parse addresses
   // event TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value);
   let data = []
-  let nftid = 0
+  let nftid = 1
   let value = 0
   for (let item of logs.result) {
     nftid = parseInt(item.data.substr(0,66))
@@ -22,7 +21,6 @@ export async function getRegisteredAddresses(contract){
 // Get all reported addresses in 1155 contract for token #2
 export async function getReportedAddresses(contract, block){
   const topics = ['2'] // TODO: get topic from contract.event
-  // const block = '0x43fb584'
   const logs = await getLogs(contract, topics, block)
   if(logs?.error){
     return {success:false, error: logs?.error?.message || 'Error fetching logs'}

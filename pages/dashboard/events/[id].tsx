@@ -10,7 +10,7 @@ import Gallery from 'components/ui/gallery'
 import ShareModal from 'components/ShareModal'
 import NotFound  from 'components/NotFound'
 import OrganizationAvatar from 'components/organizationavatar'
-import { getEventById, getVolunteersByEvent } from 'utils/registry'
+import { getEventById } from 'utils/registry'
 import styles from 'styles/dashboard.module.css'
 import ButtonBlue from 'components/buttonblue'
 import LinkButton from 'components/linkbutton'
@@ -28,18 +28,19 @@ import { apiFetch, apiPost } from 'utils/api'
 export async function getServerSideProps(context) {
   const id = context.query.id
   const event = await getEventById(id)
+  const redirect = { redirect: { destination: '/dashboard/events', permanent: false } }
+  if(!event){ return redirect }
   const resNFT = await getContract(id, 'arbitrum', 'testnet', '1155')
-  const resDST = await getContract(id, 'arbitrum', 'testnet', 'V2E')
+  const resV2E = await getContract(id, 'arbitrum', 'testnet', 'V2E')
   const contractNFT  = (resNFT.success && resNFT.result.length>0) ? resNFT.result[0] : null
-  const contractDST  = (resDST.success && resDST.result.length>0) ? resDST.result[0] : null
+  const contractV2E  = (resV2E.success && resV2E.result.length>0) ? resV2E.result[0] : null
   console.log('NFT', contractNFT)
-  console.log('DST', contractDST)
+  console.log('V2E', contractV2E)
   //const media = []
   const media = event.media?.map((it:any)=>it.media) || [] // flatten list
   media.unshift(event.image) // main image to the top
-  const volunteers = await getVolunteersByEvent(id)
   return {
-    props: { id, event, media, volunteers, contractNFT, contractDST }
+    props: { id, event, media, contractNFT, contractV2E }
   }
 }
 
@@ -59,9 +60,8 @@ async function getContract(entity_id, chain, network, contract_type){
   return info
 }
 
-export default function Event({id, event, media, volunteers, contractNFT, contractDST}){
+export default function Event({id, event, media, contractNFT, contractV2E}){
   console.log('EVENTID', id)
-  console.log('VOLUNTEERS', volunteers.length)
   var total = 0
   let NFTAddress: `0x${string}`;
   let distributorAddress: `0x${string}`;
@@ -70,7 +70,7 @@ export default function Event({id, event, media, volunteers, contractNFT, contra
   const { data: hash, writeContractAsync } = useWriteContract({ config});
 
   // State Variables
-  const started = (contractNFT && contractDST)
+  const started = (contractNFT && contractV2E)
   const [eventStarted, setEventStarted] = useState(started)
   const [ready, setReady] = useState(false)
   const [distributor, setDistributor] = useState(null)
@@ -108,6 +108,7 @@ export default function Event({id, event, media, volunteers, contractNFT, contra
     }
   }
   
+  // TODO: move to config file
   const FactoryAddress = "0xA14F3dD410021c7f05Ca1aEf7aDc9C86943E839f"
   const usdcAddressTestnet = "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d"
   let NFTBlockNumber: number;
