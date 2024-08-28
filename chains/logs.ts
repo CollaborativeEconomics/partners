@@ -1,6 +1,9 @@
+const mintTopic = '0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62' // keccak for event TransferSingle(address,address,address,uint256,uint256)
+//const mintTopic = ['0x156e29f6982eee45771b2862c71c865cb1ed8ec5a0f2c9d0c2cf96b8a8ba8ee3'] // keccak for method mint(address,uint256,uint256)
+
 // Get all registered addresses in 1155 contract for token #1
 export async function getRegisteredAddresses(contract, block){
-  const topics = ['1'] // TODO: get topic from contract.event
+  const topics = [mintTopic]
   const logs = await getLogs(contract, topics, block)
   if(logs?.error){
     return {success:false, error: logs?.error?.message || 'Error fetching logs'}
@@ -20,7 +23,7 @@ export async function getRegisteredAddresses(contract, block){
 
 // Get all reported addresses in 1155 contract for token #2
 export async function getReportedAddresses(contract, block){
-  const topics = ['2'] // TODO: get topic from contract.event
+  const topics = [mintTopic]
   const logs = await getLogs(contract, topics, block)
   if(logs?.error){
     return {success:false, error: logs?.error?.message || 'Error fetching logs'}
