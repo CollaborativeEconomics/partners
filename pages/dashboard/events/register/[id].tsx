@@ -123,16 +123,14 @@ export default function Page({id, event, contractNFT}) {
       }
   
       // Mint new NFT for the user
-      const contract = {
+      writeContract({
         address: nft,
         abi: NFTAbi,
         functionName: 'mint',
         args: [cleanedAddress as `0x${string}`, BigInt(1), BigInt(1)],
         chain: currentChain,
         account: account.address
-      }
-      console.log('CONTRACT', contract)
-      writeContract(contract);
+      });
 
       console.log('CONFIG', config)
       console.log('HASH', hash)
