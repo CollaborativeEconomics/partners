@@ -14,7 +14,7 @@ const fetchRegistry = async (url: string) => {
   }
   const response = await fetch(url, options)
   const result = await response.json()
-  console.log('DB', result)
+  //console.log('DB', result)
   if(result?.error){
     console.log('FETCH ERROR', result.error)
     return null

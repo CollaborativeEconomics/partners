@@ -33,8 +33,8 @@ export async function getServerSideProps(context) {
   if(!event){ return redirect }
   const resNFT = await getContract(id, 'arbitrum', 'testnet', '1155')
   const resV2E = await getContract(id, 'arbitrum', 'testnet', 'V2E')
-  const contractNFT  = (resNFT.success && resNFT.data.length>0) ? resNFT.data[0] : null
-  const contractV2E  = (resV2E.success && resV2E.data.length>0) ? resV2E.data[0] : null
+  const contractNFT  = (!resNFT.error && resNFT.length>0) ? resNFT[0] : null
+  const contractV2E  = (!resV2E.error && resV2E.length>0) ? resV2E[0] : null
   console.log('NFT', contractNFT)
   console.log('V2E', contractV2E)
   //const media = []

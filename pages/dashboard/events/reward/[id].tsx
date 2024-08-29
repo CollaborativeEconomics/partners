@@ -22,11 +22,11 @@ export async function getServerSideProps(context) {
   const redirect = { redirect: { destination: '/dashboard/events', permanent: false } }
   if(!event){ return redirect }
   const resNFT = await getContract(id, 'arbitrum', 'testnet', '1155')
-  const contractNFT  = (resNFT.success && resNFT.data.length>0) ? resNFT.data[0] : null
+  const contractNFT  = (!resNFT.error && resNFT.length>0) ? resNFT[0] : null
   console.log('NFT', contractNFT)
   if(!contractNFT){ return redirect }
   const resV2E = await getContract(id, 'arbitrum', 'testnet', 'V2E')
-  const contractV2E  = (resV2E.success && resV2E.data.length>0) ? resV2E.data[0] : null
+  const contractV2E  = (!resV2E.error && resV2E.length>0) ? resV2E[0] : null
   console.log('V2E', contractV2E)
   if(!contractV2E){ return redirect }
   const volunteers = await getRegisteredAddresses(contractNFT.contract_address, contractNFT.start_block)
