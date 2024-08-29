@@ -19,10 +19,11 @@ import { getContract } from 'utils/registry'
 export async function getServerSideProps(context) {
   const id = context.query.id
   const event = await getEventById(id)
+  console.log('EVENT', event)
   const redirect = { redirect: { destination: '/dashboard/events', permanent: false } }
   if(!event){ return redirect }
   const resNFT = await getContract(id, 'arbitrum', 'testnet', '1155')
-  const contractNFT  = (resNFT.success && resNFT.result.length>0) ? resNFT.result[0] : null
+  const contractNFT  = (resNFT.success && resNFT.data.length>0) ? resNFT.data[0] : null
   console.log('NFT', contractNFT)
   if(!contractNFT){ return redirect }
   return { props: { id, event, contractNFT } }
