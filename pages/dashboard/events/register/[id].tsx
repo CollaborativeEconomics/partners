@@ -34,7 +34,7 @@ export default function Page({id, event, contractNFT}) {
   const [device, setDevice] = useState(null)
   const [message, setMessage] = useState('Scan the QR-CODE to register for the event')
   const account = useAccount()
-  const { data: hash, writeContract } = useWriteContract({ config});
+  const { data: hash, writeContract } = useWriteContract({config});
   // TODO: move to config file
   const currentChain = arbitrumSepolia
 
@@ -114,7 +114,8 @@ export default function Page({id, event, contractNFT}) {
         functionName: 'balanceOf',
         args: [cleanedAddress as `0x${string}`, BigInt(1)]
       });
-  
+      console.log('BALANCE', balance)
+
       if (balance > BigInt(0)) {
         // throw new Error('User already registeredfor this event');
         setMessage('User already registered for this event');
@@ -122,19 +123,24 @@ export default function Page({id, event, contractNFT}) {
       }
   
       // Mint new NFT for the user
-      writeContract({
+      const contract = {
         address: nft,
         abi: NFTAbi,
         functionName: 'mint',
         args: [cleanedAddress as `0x${string}`, BigInt(1), BigInt(1)],
         chain: currentChain,
         account: account.address
-      });
+      }
+      console.log('CONTRACT', contract)
+      writeContract(contract);
 
+      console.log('CONFIG', config)
+      console.log('HASH', hash)
       const nftReceipt = await waitForTransaction(config, {
-        hash,
+        hash, // FIX: hash is undefined, it gets minted but confirmation errors  <<<<<-------
         confirmations: 2,
       })
+      console.log('RECEIPT', nftReceipt)
   
       console.log('NFT minted successfully');
       setMessage('NFT minted successfully');
