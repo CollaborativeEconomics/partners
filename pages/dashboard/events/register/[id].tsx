@@ -34,7 +34,7 @@ export default function Page({id, event, contractNFT}) {
   const [device, setDevice] = useState(null)
   const [message, setMessage] = useState('Scan the QR-CODE to register for the event')
   const account = useAccount()
-  const { data: hash, writeContract } = useWriteContract({config});
+  const { writeContractAsync } = useWriteContract({config});
   // TODO: move to config file
   const currentChain = arbitrumSepolia
 
@@ -123,7 +123,7 @@ export default function Page({id, event, contractNFT}) {
       }
   
       // Mint new NFT for the user
-      writeContract({
+      const hash = await writeContractAsync({
         address: nft,
         abi: NFTAbi,
         functionName: 'mint',
@@ -132,10 +132,12 @@ export default function Page({id, event, contractNFT}) {
         account: account.address
       });
 
+      console.log('HASH', hash)
+
       console.log('CONFIG', config)
       console.log('HASH', hash)
       const nftReceipt = await waitForTransaction(config, {
-        hash, // FIX: hash is undefined, it gets minted but confirmation errors  <<<<<-------
+        hash,
         confirmations: 2,
       })
       console.log('RECEIPT', nftReceipt)

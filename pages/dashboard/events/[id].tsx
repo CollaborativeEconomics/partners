@@ -33,6 +33,8 @@ export async function getServerSideProps(context) {
   if(!event){ return redirect }
   const resNFT = await getContract(id, 'arbitrum', 'testnet', '1155')
   const resV2E = await getContract(id, 'arbitrum', 'testnet', 'V2E')
+  console.log('RES', resV2E)
+  console.log('RES', resNFT)
   const contractNFT  = (!resNFT.error && resNFT.length>0) ? resNFT[0] : null
   const contractV2E  = (!resV2E.error && resV2E.length>0) ? resV2E[0] : null
   console.log('NFT', contractNFT)
@@ -68,7 +70,7 @@ export default function Event({id, event, media, contractNFT, contractV2E}){
   let distributorAddress: `0x${string}`;
   const { connectors, connect, data: connection, isSuccess } = useConnect({ config })
   const { chainId, address } = useAccount()
-  const { data: hash, writeContractAsync } = useWriteContract({ config});
+  const { writeContractAsync } = useWriteContract({ config});
 
   // State Variables
   const started = (contractNFT && contractV2E)
@@ -120,7 +122,7 @@ export default function Event({id, event, media, contractNFT, contractV2E}){
         console.log("Initiating NFT deployment...")
         setMessage("Initiating NFT deployment, please wait...")
         const uri = "https://ipfs.io/ipfs/QmeSjSinHpPnmXmspMjwiXyN6zS4E9zccariGR3jxcaWtq/1.json"
-         let data = await writeContractAsync({
+         const hash = await writeContractAsync({
           address: FactoryAddress,
           abi: FactoryAbi,
           functionName: "deployVolunteerNFT",
@@ -132,7 +134,7 @@ export default function Event({id, event, media, contractNFT, contractV2E}){
         console.log("NFT deployment initiated. Waiting for confirmation...")
         // new Promise(resolve => setTimeout(resolve, 30000));
         const nftReceipt = await waitForTransaction(config, {
-          hash: data,
+          hash,
           confirmations: 2,
         })
         console.log("NFT deployment confirmed. Receipt:", nftReceipt)
@@ -160,7 +162,7 @@ export default function Event({id, event, media, contractNFT, contractV2E}){
         console.log("Initiating TokenDistributor deployment...")
         setMessage("Initiating Distributor deployment, please wait...")
         const ethAmount = await getEthEquivalentOfUsdc(event.unitvalue)
-        let data = await writeContractAsync({
+        const hash = await writeContractAsync({
           address: FactoryAddress,
           abi: FactoryAbi,
           functionName: "deployTokenDistributor",
@@ -171,7 +173,7 @@ export default function Event({id, event, media, contractNFT, contractV2E}){
   
         console.log("TokenDistributor deployment initiated. Waiting for confirmation...")
         const distributorReceipt = await waitForTransaction(config, {
-          hash: data,
+          hash,
           confirmations: 2,
         })
         console.log("TokenDistributor deployment confirmed. Receipt:", distributorReceipt)

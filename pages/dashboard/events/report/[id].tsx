@@ -10,7 +10,7 @@ import styles from 'styles/dashboard.module.css'
 import { BrowserQRCodeReader } from '@zxing/library';
 import TextInput from 'components/form/textinput'
 import { Connector, useConnect, useAccount, useWriteContract } from 'wagmi'
-import { readContract, watchContractEvent, switchChain } from '@wagmi/core'
+import { readContract, switchChain, waitForTransaction } from '@wagmi/core'
 import { arbitrumSepolia } from 'wagmi/chains'
 import { config } from 'chains/config'
 import { NFTAbi } from 'chains/contracts/volunteers/abis'
@@ -38,7 +38,7 @@ export default function Page({id, event, contractNFT }) {
   const payrate = event?.payrate || 1
   const unitlabel = event?.unitlabel || ''
   const [amount, setAmount] = useState(payrate)
-  const { data: hash, writeContract } = useWriteContract({ config});
+  const { writeContractAsync } = useWriteContract({ config});
   const account = useAccount()
   // TODO: move to config file
   const currentChain = arbitrumSepolia
@@ -120,7 +120,7 @@ export default function Page({id, event, contractNFT }) {
       }
   
       // Mint token ID 2 for the user
-      writeContract({
+     const hash = await writeContractAsync({
         address: nft,
         abi: NFTAbi,
         functionName: 'mint',
@@ -128,6 +128,12 @@ export default function Page({id, event, contractNFT }) {
         chain: currentChain,
         account: account.address
       });
+
+      const nftReceipt = await waitForTransaction(config, {
+        hash,
+        confirmations: 2,
+      })
+      console.log('RECEIPT', nftReceipt)
   
       console.log('Reward NFT (token ID 2) minted successfully');
       setMessage('Reward NFT minted successfully');
