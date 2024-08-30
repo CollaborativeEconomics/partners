@@ -37,7 +37,7 @@ export default function Page({id, event, volunteers, contractNFT, contractV2E}) 
   console.log('EVENT ID', id)
   const [device, setDevice] = useState(null)
   const [message, setMessage] = useState('Start the disbursement process')
-  const { data: hash, writeContract } = useWriteContract({ config});
+  const { data: hash, writeContractAsync } = useWriteContract({ config});
   const { connectors, connect } = useConnect()
   const payrate = event?.payrate || 1
   const unitlabel = event?.unitlabel || ''
@@ -59,7 +59,7 @@ export default function Page({id, event, volunteers, contractNFT, contractV2E}) 
     try {
       // Call distributeTokensByUnit function
       const registered = volunteers.map(it => it.address)
-      writeContract({
+      const hash = await writeContractAsync({
         address: distributor as `0x${string}`,
         abi: DistributorAbi,
         functionName: 'distributeTokensByUnit',
