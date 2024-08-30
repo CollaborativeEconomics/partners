@@ -37,10 +37,11 @@ export async function getServerSideProps(context) {
   if (!contractV2E) {
     return redirect;
   }
-  const volunteers = await getRegisteredAddresses(
+  const { data: volunteers } = await getReportedAddresses(
     contractNFT.contract_address,
     contractNFT.start_block,
   );
+  console.log('VOLUNTEERS', volunteers);
   return { props: { id, event, volunteers, contractNFT, contractV2E } };
 }
 
@@ -115,13 +116,13 @@ export default function Page({
               </thead>
               <tbody className="border-t-2">
                 {volunteers?.length &&
-                  volunteers?.map(item => {
+                  volunteers?.map(v => {
                     //console.log('ITEM')
-                    total += parseInt(item.amount);
+                    total += parseInt(v.value);
                     return (
-                      <tr key={item.id}>
-                        <td>{item.address.toLowerCase()}</td>
-                        <td align="right">${item.amount}</td>
+                      <tr key={`volunteer-${v.address}`}>
+                        <td>{v.address}</td>
+                        <td align="right">${v.value}</td>
                       </tr>
                     );
                   })}
