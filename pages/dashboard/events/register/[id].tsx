@@ -19,10 +19,11 @@ import { getContract } from 'utils/registry'
 export async function getServerSideProps(context) {
   const id = context.query.id
   const event = await getEventById(id)
+  console.log('EVENT', event)
   const redirect = { redirect: { destination: '/dashboard/events', permanent: false } }
   if(!event){ return redirect }
   const resNFT = await getContract(id, 'arbitrum', 'testnet', '1155')
-  const contractNFT  = (resNFT.success && resNFT.result.length>0) ? resNFT.result[0] : null
+  const contractNFT  = (!resNFT.error && resNFT.length>0) ? resNFT[0] : null
   console.log('NFT', contractNFT)
   if(!contractNFT){ return redirect }
   return { props: { id, event, contractNFT } }
@@ -33,7 +34,7 @@ export default function Page({id, event, contractNFT}) {
   const [device, setDevice] = useState(null)
   const [message, setMessage] = useState('Scan the QR-CODE to register for the event')
   const account = useAccount()
-  const { data: hash, writeContract } = useWriteContract({ config});
+  const { writeContractAsync } = useWriteContract({config});
   // TODO: move to config file
   const currentChain = arbitrumSepolia
 
@@ -113,7 +114,8 @@ export default function Page({id, event, contractNFT}) {
         functionName: 'balanceOf',
         args: [cleanedAddress as `0x${string}`, BigInt(1)]
       });
-  
+      console.log('BALANCE', balance)
+
       if (balance > BigInt(0)) {
         // throw new Error('User already registeredfor this event');
         setMessage('User already registered for this event');
@@ -121,7 +123,7 @@ export default function Page({id, event, contractNFT}) {
       }
   
       // Mint new NFT for the user
-      writeContract({
+      const hash = await writeContractAsync({
         address: nft,
         abi: NFTAbi,
         functionName: 'mint',
@@ -130,10 +132,15 @@ export default function Page({id, event, contractNFT}) {
         account: account.address
       });
 
+      console.log('HASH', hash)
+
+      console.log('CONFIG', config)
+      console.log('HASH', hash)
       const nftReceipt = await waitForTransaction(config, {
         hash,
         confirmations: 2,
       })
+      console.log('RECEIPT', nftReceipt)
   
       console.log('NFT minted successfully');
       setMessage('NFT minted successfully');

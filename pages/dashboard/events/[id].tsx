@@ -28,12 +28,15 @@ import { apiFetch, apiPost } from 'utils/api'
 export async function getServerSideProps(context) {
   const id = context.query.id
   const event = await getEventById(id)
+  console.log('EVENT', event)
   const redirect = { redirect: { destination: '/dashboard/events', permanent: false } }
   if(!event){ return redirect }
   const resNFT = await getContract(id, 'arbitrum', 'testnet', '1155')
   const resV2E = await getContract(id, 'arbitrum', 'testnet', 'V2E')
-  const contractNFT  = (resNFT.success && resNFT.result.length>0) ? resNFT.result[0] : null
-  const contractV2E  = (resV2E.success && resV2E.result.length>0) ? resV2E.result[0] : null
+  console.log('RES', resV2E)
+  console.log('RES', resNFT)
+  const contractNFT  = (!resNFT.error && resNFT.result.length>0) ? resNFT.result[0] : null
+  const contractV2E  = (!resV2E.error && resV2E.result.length>0) ? resV2E.result[0] : null
   console.log('NFT', contractNFT)
   console.log('V2E', contractV2E)
   //const media = []
@@ -63,11 +66,9 @@ async function getContract(entity_id, chain, network, contract_type){
 export default function Event({id, event, media, contractNFT, contractV2E}){
   console.log('EVENTID', id)
   var total = 0
-  let NFTAddress: `0x${string}`;
-  let distributorAddress: `0x${string}`;
   const { connectors, connect, data: connection, isSuccess } = useConnect({ config })
   const { chainId, address } = useAccount()
-  const { data: hash, writeContractAsync } = useWriteContract({ config});
+  const { writeContractAsync } = useWriteContract({ config});
 
   // State Variables
   const started = (contractNFT && contractV2E)
@@ -88,25 +89,6 @@ export default function Event({id, event, media, contractNFT, contractV2E}){
     //const date = Intl.DateTimeFormat('jp-JP').format(new Date(d))
     return date
   }
-
-  async function getEthEquivalentOfUsdc(usdcAmount: number): Promise<number> {
-    try {
-      // Fetch USDC/ETH price from CoinGecko
-      const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=usd-coin&vs_currencies=eth');
-      const data = await response.json();
-      
-      // Extract the USDC/ETH exchange rate
-      const usdcToEthRate = data['usd-coin'].eth;
-      
-      // Calculate ETH equivalent
-      const ethAmount = usdcAmount * usdcToEthRate;
-      
-      return ethAmount;
-    } catch (error) {
-      console.error('Error fetching USDC/ETH price:', error);
-      throw error;
-    }
-  }
   
   // TODO: move to config file
   const FactoryAddress = "0xA14F3dD410021c7f05Ca1aEf7aDc9C86943E839f"
@@ -119,7 +101,7 @@ export default function Event({id, event, media, contractNFT, contractV2E}){
         console.log("Initiating NFT deployment...")
         setMessage("Initiating NFT deployment, please wait...")
         const uri = "https://ipfs.io/ipfs/QmeSjSinHpPnmXmspMjwiXyN6zS4E9zccariGR3jxcaWtq/1.json"
-         let data = await writeContractAsync({
+         const hash = await writeContractAsync({
           address: FactoryAddress,
           abi: FactoryAbi,
           functionName: "deployVolunteerNFT",
@@ -131,7 +113,7 @@ export default function Event({id, event, media, contractNFT, contractV2E}){
         console.log("NFT deployment initiated. Waiting for confirmation...")
         // new Promise(resolve => setTimeout(resolve, 30000));
         const nftReceipt = await waitForTransaction(config, {
-          hash: data,
+          hash,
           confirmations: 2,
         })
         console.log("NFT deployment confirmed. Receipt:", nftReceipt)
@@ -158,19 +140,18 @@ export default function Event({id, event, media, contractNFT, contractV2E}){
       try {
         console.log("Initiating TokenDistributor deployment...")
         setMessage("Initiating Distributor deployment, please wait...")
-        const ethAmount = await getEthEquivalentOfUsdc(event.unitvalue)
-        let data = await writeContractAsync({
+        const hash = await writeContractAsync({
           address: FactoryAddress,
           abi: FactoryAbi,
           functionName: "deployTokenDistributor",
-          args: [usdcAddressTestnet, NFTAddress as`0x${string}`, BigInt(event.unitvalue), parseEther(`${ethAmount}`)],
+          args: [usdcAddressTestnet, NFTAddress as`0x${string}`, BigInt(event.unitvalue)],
           chain: arbitrumSepolia,
           account: address
         })
   
         console.log("TokenDistributor deployment initiated. Waiting for confirmation...")
         const distributorReceipt = await waitForTransaction(config, {
-          hash: data,
+          hash,
           confirmations: 2,
         })
         console.log("TokenDistributor deployment confirmed. Receipt:", distributorReceipt)

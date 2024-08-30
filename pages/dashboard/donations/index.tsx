@@ -80,8 +80,10 @@ export default function Page(props:Props) {
       const orid = session?.orgid ?? ''
       console.log('GET DONATIONS:', orid)
       const list = await getDonations(orid)
+      const filter = list.filter(it => it.chain=='Arbitrum')
       console.log('DONATIONS:', list)
-      setData(list)
+      console.log('FILTERED:', filter)
+      setData(filter)
       setOrgid(orid)
       console.log('LAST ORGID:', orid)
     }

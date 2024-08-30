@@ -17,11 +17,6 @@ export const FactoryAbi = [
         "name": "_baseFee",
         "type": "uint256",
         "internalType": "uint256"
-      },
-      {
-        "name": "_ethBaseFee",
-        "type": "uint256",
-        "internalType": "uint256"
       }
     ],
     "outputs": [
