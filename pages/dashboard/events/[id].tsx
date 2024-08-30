@@ -89,25 +89,6 @@ export default function Event({id, event, media, contractNFT, contractV2E}){
     //const date = Intl.DateTimeFormat('jp-JP').format(new Date(d))
     return date
   }
-
-  async function getEthEquivalentOfUsdc(usdcAmount: number): Promise<number> {
-    try {
-      // Fetch USDC/ETH price from CoinGecko
-      const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=usd-coin&vs_currencies=eth');
-      const data = await response.json();
-      
-      // Extract the USDC/ETH exchange rate
-      const usdcToEthRate = data['usd-coin'].eth;
-      
-      // Calculate ETH equivalent
-      const ethAmount = usdcAmount * usdcToEthRate;
-      
-      return ethAmount;
-    } catch (error) {
-      console.error('Error fetching USDC/ETH price:', error);
-      throw error;
-    }
-  }
   
   // TODO: move to config file
   const FactoryAddress = "0xA14F3dD410021c7f05Ca1aEf7aDc9C86943E839f"
@@ -159,12 +140,11 @@ export default function Event({id, event, media, contractNFT, contractV2E}){
       try {
         console.log("Initiating TokenDistributor deployment...")
         setMessage("Initiating Distributor deployment, please wait...")
-        const ethAmount = await getEthEquivalentOfUsdc(event.unitvalue)
         const hash = await writeContractAsync({
           address: FactoryAddress,
           abi: FactoryAbi,
           functionName: "deployTokenDistributor",
-          args: [usdcAddressTestnet, NFTAddress as`0x${string}`, BigInt(event.unitvalue), parseEther(`${ethAmount}`)],
+          args: [usdcAddressTestnet, NFTAddress as`0x${string}`, BigInt(event.unitvalue)],
           chain: arbitrumSepolia,
           account: address
         })
