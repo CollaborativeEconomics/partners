@@ -21,40 +21,41 @@ export const authOptions: NextAuthOptions = {
       clientId: googleId,
       clientSecret: googleSecret
     })
-  /*
-    Auth0Provider({
-      clientId: process.env.AUTH0_ID,
-      clientSecret: process.env.AUTH0_SECRET,
-      issuer: process.env.AUTH0_ISSUER,
-    }),
-    FacebookProvider({
-      clientId: process.env.FACEBOOK_ID,
-      clientSecret: process.env.FACEBOOK_SECRET,
-    }),
-    GithubProvider({
-      clientId: process.env.GITHUB_ID,
-      clientSecret: process.env.GITHUB_SECRET,
-    }),
-    TwitterProvider({
-      clientId: process.env.TWITTER_ID,
-      clientSecret: process.env.TWITTER_SECRET,
-      version: "2.0",
-    })
-  */
+    /*
+      Auth0Provider({
+        clientId: process.env.AUTH0_ID,
+        clientSecret: process.env.AUTH0_SECRET,
+        issuer: process.env.AUTH0_ISSUER,
+      }),
+      FacebookProvider({
+        clientId: process.env.FACEBOOK_ID,
+        clientSecret: process.env.FACEBOOK_SECRET,
+      }),
+      GithubProvider({
+        clientId: process.env.GITHUB_ID,
+        clientSecret: process.env.GITHUB_SECRET,
+      }),
+      TwitterProvider({
+        clientId: process.env.TWITTER_ID,
+        clientSecret: process.env.TWITTER_SECRET,
+        version: "2.0",
+      })
+    */
   ],
   callbacks: {
     async jwt({ token, account, trigger, session }) {
       //console.log('JWT TOKEN', token)
       //token.userRole = "admin"
       // TODO: RETHINK
-      if(token?.email){
+      if (token?.email) {
         const org = await getOrganizationByEmail(token.email)
+
         token.orgid = org?.id || ''
         token.orgname = org?.name || ''
-        if(!org || org?.error){
+        if (!org || org?.error) {
           const user = await getUserByEmail(token.email)
           console.log('USER', user)
-          if(user && user.type==9) {
+          if (user && user.type == 9) {
             //console.log('ADMIN!')
             if (trigger === "update" && session?.orgid) {
               console.log('TOKEN UPDATE', session)
@@ -64,7 +65,7 @@ export const authOptions: NextAuthOptions = {
             }
             token.orgname = 'Admin'
             token.userRole = 'admin'
-          } else if(token.userRole!='admin') {
+          } else if (token.userRole != 'admin') {
             //console.log('NOT ADMIN!')
             token.orgname = 'User'
           }
@@ -84,7 +85,7 @@ export const authOptions: NextAuthOptions = {
       }
       session.orgname = (token?.orgname as string) ?? ''
       session.isadmin = (token?.userRole == 'admin')
-      //console.log('SES TOKEN', session, token, user)
+      // console.log('SES TOKEN', { session, token, user })
       return session
     }
   }
