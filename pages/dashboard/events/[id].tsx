@@ -35,8 +35,8 @@ export async function getServerSideProps(context) {
   const resV2E = await getContract(id, 'arbitrum', 'testnet', 'V2E')
   console.log('RES', resV2E)
   console.log('RES', resNFT)
-  const contractNFT  = (!resNFT.error && resNFT.length>0) ? resNFT[0] : null
-  const contractV2E  = (!resV2E.error && resV2E.length>0) ? resV2E[0] : null
+  const contractNFT  = (!resNFT.error && resNFT.result.length>0) ? resNFT.result[0] : null
+  const contractV2E  = (!resV2E.error && resV2E.result.length>0) ? resV2E.result[0] : null
   console.log('NFT', contractNFT)
   console.log('V2E', contractV2E)
   //const media = []
@@ -66,8 +66,6 @@ async function getContract(entity_id, chain, network, contract_type){
 export default function Event({id, event, media, contractNFT, contractV2E}){
   console.log('EVENTID', id)
   var total = 0
-  let NFTAddress: `0x${string}`;
-  let distributorAddress: `0x${string}`;
   const { connectors, connect, data: connection, isSuccess } = useConnect({ config })
   const { chainId, address } = useAccount()
   const { writeContractAsync } = useWriteContract({ config});
