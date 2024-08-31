@@ -158,6 +158,9 @@ export default function Page({
             </table>
           </div>
           <div>
+            <p>Contract: {contractV2E.contract_address}</p>
+            <p className="text-slate-500">Be sure to fund the contract with USDC before rewarding volunteers</p>
+            {/*
             <TextInput
               label={"Contract: "+contractV2E.contract_address}
               register={register('amount')}
@@ -169,6 +172,7 @@ export default function Page({
               text="ADD FUNDS TO CONTRACT"
               onClick={onFund}
             />
+            */}
           </div>
           <div className="w-full mb-2 flex flex-row justify-between">
             <ButtonBlue
