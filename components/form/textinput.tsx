@@ -5,7 +5,8 @@ interface TextInputProps {
   label?: string;
   className?: string;
   register: UseFormRegisterReturn;
-  onChange?: (event:any)=>void;
+  onChange?: (event: any) => void;
+  renderRight?: React.ReactNode;
 }
 
 const TextInput = forwardRef(
@@ -15,21 +16,38 @@ const TextInput = forwardRef(
       register,
       className,
       onChange,
+      renderRight = null,
       ...props
     }: TextInputProps & HTMLProps<HTMLInputElement>,
-    ref
+    ref,
   ) => {
     return (
       <label className={`my-4 ${className ?? ''}`}>
         <span className="text-slate-300 text-sm uppercase text-left">
           {label}
         </span>
-        <input onKeyUp={onChange} ref={ref} {...props} {...register} />
+        <div
+          className="relative w-full overflow-hidden"
+          style={{ borderRadius: '14px' }}
+        >
+          <input
+            onKeyUp={onChange}
+            ref={ref}
+            className="w-full"
+            {...props}
+            {...register}
+          />
+          {renderRight && (
+            <div className="absolute right-0 top-0 bottom-0 flex items-center justify-center p-2 bg-blue-700">
+              {renderRight}
+            </div>
+          )}
+        </div>
       </label>
-    )
-  }
-)
+    );
+  },
+);
 
-TextInput.displayName = 'TextInput'
+TextInput.displayName = 'TextInput';
 
-export default TextInput
+export default TextInput;

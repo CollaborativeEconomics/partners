@@ -26,7 +26,7 @@
     "autoprefixer": "10.4.14",
     "aws-sdk": "^2.1418.0",
     "class-variance-authority": "^0.7.0",
-    "clipboard-copy": "^4.0.1",
+    "clipboardy": "^4.0.0",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",
     "eslint": "8.44.0",
@@ -48,5 +48,8 @@
     "viem": "^2.20.0",
     "wagmi": "^2.12.7",
     "web3": "^4.1.1"
+  },
+  "devDependencies": {
+    "@types/clipboardy": "^2.0.1"
   }
 }
