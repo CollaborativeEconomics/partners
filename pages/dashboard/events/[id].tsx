@@ -161,7 +161,7 @@ export default function Event({ id, event, media, contractNFT, contractV2E }) {
         args: [
           usdcAddressTestnet,
           NFTAddress as `0x${string}`,
-          BigInt(event.unitvalue),
+          parseEther(event.unitvalue.toString()),
         ],
         chain: arbitrumSepolia,
         account: address,
