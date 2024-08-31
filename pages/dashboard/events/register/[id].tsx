@@ -69,7 +69,7 @@ export default function Page({ id, event, contractNFT }) {
     qrReader.current
       .getVideoInputDevices()
       .then(videoInputDevices => {
-        setDevice(videoInputDevices[0].deviceId);
+        setDevice(videoInputDevices.findLast(v => v.deviceId));
       })
       .catch(err => {
         console.error(err);
