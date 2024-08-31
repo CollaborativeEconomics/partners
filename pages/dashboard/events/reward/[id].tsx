@@ -77,8 +77,15 @@ export default function Page({
     try {
       // Call distributeTokensByUnit function
       const registered = volunteers.map(it => it.address);
+      console.log(
+        'REGISTERED',
+        registered,
+        distributor,
+        currentChain,
+        account.address,
+      );
       const hash = await writeContractAsync({
-        address: distributor as `0x${string}`,
+        address: distributor,
         abi: DistributorAbi,
         functionName: 'distributeTokensByUnit',
         args: [registered],
