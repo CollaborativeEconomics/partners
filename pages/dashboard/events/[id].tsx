@@ -18,7 +18,6 @@ import {
   useConnect,
   useAccount,
   useWriteContract,
-  useSimulateContract,
 } from 'wagmi';
 import { readContract, switchChain, waitForTransaction } from '@wagmi/core';
 import { arbitrumSepolia } from 'wagmi/chains';
@@ -108,27 +107,6 @@ export default function Event({ id, event, media, contractNFT, contractV2E }) {
     return date;
   }
 
-  async function getEthEquivalentOfUsdc(usdcAmount: number): Promise<number> {
-    try {
-      // Fetch USDC/ETH price from CoinGecko
-      const response = await fetch(
-        'https://api.coingecko.com/api/v3/simple/price?ids=usd-coin&vs_currencies=eth',
-      );
-      const data = await response.json();
-
-      // Extract the USDC/ETH exchange rate
-      const usdcToEthRate = data['usd-coin'].eth;
-
-      // Calculate ETH equivalent
-      const ethAmount = usdcAmount * usdcToEthRate;
-
-      return ethAmount;
-    } catch (error) {
-      console.error('Error fetching USDC/ETH price:', error);
-      throw error;
-    }
-  }
-
   // TODO: move to config file
   const FactoryAddress = '0xD4E47912a12f506843F522Ea58eA31Fd313eB2Ee';
   const usdcAddressTestnet = '0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d';
@@ -180,7 +158,6 @@ export default function Event({ id, event, media, contractNFT, contractV2E }) {
     try {
       console.log('Initiating TokenDistributor deployment...');
       setMessage('Initiating Distributor deployment, please wait...');
-      const ethAmount = await getEthEquivalentOfUsdc(event.unitvalue);
       const hash = await writeContractAsync({
         address: FactoryAddress,
         abi: FactoryAbi,
@@ -189,7 +166,6 @@ export default function Event({ id, event, media, contractNFT, contractV2E }) {
           usdcAddressTestnet,
           NFTAddress as `0x${string}`,
           BigInt(event.unitvalue),
-          parseEther(`${ethAmount}`),
         ],
         chain: arbitrumSepolia,
         account: address,
