@@ -65,7 +65,9 @@ export default function Page({
   const currentChain = arbitrumSepolia;
   const account = useAccount();
 
-  const { register, watch, setValue } = useForm({ defaultValues: { amount: '' } });
+  const { register, watch, setValue } = useForm({
+    defaultValues: { amount: '' },
+  });
   const [amount] = watch(['amount']);
 
   async function onFund() {
@@ -143,7 +145,7 @@ export default function Page({
                     return (
                       <tr key={`volunteer-${v.address}`}>
                         <td>{v.address}</td>
-                        <td align="right">${v.value}</td>
+                        <td align="right">${v.value * payrate}</td>
                       </tr>
                     );
                   })}
@@ -159,7 +161,9 @@ export default function Page({
           </div>
           <div>
             <p>Contract: {contractV2E.contract_address}</p>
-            <p className="text-slate-500">Be sure to fund the contract with USDC before rewarding volunteers</p>
+            <p className="text-slate-500">
+              Be sure to fund the contract with USDC before rewarding volunteers
+            </p>
             {/*
             <TextInput
               label={"Contract: "+contractV2E.contract_address}
