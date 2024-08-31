@@ -5,6 +5,7 @@ import Dashboard from 'components/dashboard';
 import Sidebar from 'components/sidebar';
 import Title from 'components/title';
 import ButtonBlue from 'components/buttonblue';
+import TextInput from 'components/form/textinput';
 import { getEventById } from 'utils/registry';
 import styles from 'styles/dashboard.module.css';
 import { useConnect, useAccount, useWriteContract } from 'wagmi';
@@ -63,6 +64,19 @@ export default function Page({
   // TODO: move to config file
   const currentChain = arbitrumSepolia;
   const account = useAccount();
+
+  const { register, watch, setValue } = useForm({ defaultValues: { amount: '' } });
+  const [amount] = watch(['amount']);
+
+  async function onFund() {
+    console.error('Funding contract...');
+    setMessage('Funding contract...');
+    // TODO: Fund wallet
+    // in server side props
+    //   get org wallet with USDC
+    //   get V2E contract address
+    // const ok = sendToken(amount, tokenAddress, contractV2E.contract_address)
+  }
 
   async function onMint() {
     const nft: `0x${string}` = contractNFT.contract_address;
@@ -142,6 +156,23 @@ export default function Page({
                 </tr>
               </tfoot>
             </table>
+          </div>
+          <div>
+            <p>Contract: {contractV2E.contract_address}</p>
+            <p className="text-slate-500">Be sure to fund the contract with USDC before rewarding volunteers</p>
+            {/*
+            <TextInput
+              label={"Contract: "+contractV2E.contract_address}
+              register={register('amount')}
+              type="number"
+              pattern="\d*"
+            />
+            <ButtonBlue
+              id="buttonFund"
+              text="ADD FUNDS TO CONTRACT"
+              onClick={onFund}
+            />
+            */}
           </div>
           <div className="w-full mb-2 flex flex-row justify-between">
             <ButtonBlue
