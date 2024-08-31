@@ -18,7 +18,6 @@ import {
   useConnect,
   useAccount,
   useWriteContract,
-  useSimulateContract,
 } from 'wagmi';
 import { readContract, switchChain, waitForTransaction } from '@wagmi/core';
 import { arbitrumSepolia } from 'wagmi/chains';
@@ -189,7 +188,6 @@ export default function Event({ id, event, media, contractNFT, contractV2E }) {
           usdcAddressTestnet,
           NFTAddress as `0x${string}`,
           BigInt(event.unitvalue),
-          parseEther(`${ethAmount}`),
         ],
         chain: arbitrumSepolia,
         account: address,
