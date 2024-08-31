@@ -91,7 +91,7 @@ export default function Event({id, event, media, contractNFT, contractV2E}){
   }
   
   // TODO: move to config file
-  const FactoryAddress = "0xA14F3dD410021c7f05Ca1aEf7aDc9C86943E839f"
+  const FactoryAddress = "0xD4E47912a12f506843F522Ea58eA31Fd313eB2Ee"
   const usdcAddressTestnet = "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d"
   let NFTBlockNumber: number;
   let distributorBlockNumber: number;
