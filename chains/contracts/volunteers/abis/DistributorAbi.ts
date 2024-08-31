@@ -21,6 +21,11 @@ export const DistributorAbi = [
         "name": "_baseFee",
         "type": "uint256",
         "internalType": "uint256"
+      },
+      {
+        "name": "_ethBaseFee",
+        "type": "uint256",
+        "internalType": "uint256"
       }
     ],
     "stateMutability": "nonpayable"
@@ -28,6 +33,19 @@ export const DistributorAbi = [
   {
     "type": "receive",
     "stateMutability": "payable"
+  },
+  {
+    "type": "function",
+    "name": "ETHBaseFee",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
   },
   {
     "type": "function",
