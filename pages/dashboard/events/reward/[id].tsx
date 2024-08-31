@@ -141,7 +141,7 @@ export default function Page({
                 {volunteers?.length &&
                   volunteers?.map(v => {
                     //console.log('ITEM')
-                    total += parseInt(v.value);
+                    total += parseInt(v.value * payrate);
                     return (
                       <tr key={`volunteer-${v.address}`}>
                         <td>{v.address}</td>
