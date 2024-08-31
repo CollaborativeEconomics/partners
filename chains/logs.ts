@@ -2,48 +2,65 @@ const mintTopic = '0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2
 //const mintTopic = ['0x156e29f6982eee45771b2862c71c865cb1ed8ec5a0f2c9d0c2cf96b8a8ba8ee3'] // keccak for method mint(address,uint256,uint256)
 
 // Get all registered addresses in 1155 contract for token #1
-export async function getRegisteredAddresses(contract, block){
+export async function getRegisteredAddresses(contract, block) {
   const topics = [mintTopic]
   const logs = await getLogs(contract, topics, block)
-  if(logs?.error){
-    return {success:false, error: logs?.error?.message || 'Error fetching logs'}
+  console.log({ logs })
+
+  if (logs?.error) {
+    return { success: false, error: logs?.error?.message || 'Error fetching logs' }
   }
   // Parse addresses
   // event TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value);
   let data = []
   let nftid = 1
   let value = 0
-  for (let item of logs.result) {
-    nftid = parseInt(item.data.substr(0,66))
-    if(nftid!==1){ continue }
-    data.push('0x'+item.topics[3].substr(26)) // topic 3 is recipient address
+  for (let item of logs) {
+    nftid = parseInt(item.data.substr(0, 66))
+    if (nftid !== 1) { continue }
+    data.push('0x' + item.topics[3].substr(26)) // topic 3 is recipient address
   }
-  return {success:true, data}
+  console.log({ data })
+
+  return { success: true, data }
 }
 
 // Get all reported addresses in 1155 contract for token #2
-export async function getReportedAddresses(contract, block){
+export async function getReportedAddresses(contract, block) {
   const topics = [mintTopic]
   const logs = await getLogs(contract, topics, block)
-  if(logs?.error){
-    return {success:false, error: logs?.error?.message || 'Error fetching logs'}
+  if (logs?.error) {
+    return { success: false, error: logs?.error?.message || 'Error fetching logs' }
   }
-  // Parse addresses
-  // event TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value);
+  function getDataFromTopicsLog(log) {
+    const from = `0x${log.topics[2].slice(26)}`;  // Extract 'from' address
+    const to = `0x${log.topics[3].slice(26)}`;    // Extract 'to' address
+
+    // Decode the 'data' field to extract the 'id' and 'value'
+    const data = log.data.slice(2); // Remove the "0x" prefix
+    const nftid = BigInt(`0x${data.slice(0, 64)}`).toString(); // First 32 bytes -> id
+    const value = BigInt(`0x${data.slice(64, 128)}`).toString(); // Next 32 bytes -> value
+
+    return { from, to, nftid, value };
+  }
+
   let data = []
-  let nftid = 2
-  let value = 0
-  for (let item of logs.result) {
-    nftid = parseInt(item.data.substr(0,66))
-    value = parseInt(item.data.substr(66))
-    if(nftid!==2){ continue }
-    data.push('0x'+item.topics[3].substr(26)) // topic 3 is recipient address
+  for (let log of logs) {
+    const { from, to, nftid, value } = getDataFromTopicsLog(log);
+    if (Number(nftid) !== 2) { continue }
+    data.push({
+      address: to,
+      nftid,
+      value
+    }) // topic 3 is recipient address
   }
-  return {success:true, data}
+  return { success: true, data }
 }
 
 // contract address, array of topics to search for, and starting block
-async function getLogs(address, topics, fromBlock){
+async function getLogs(address, topics, fromBlock) {
+  const hexBlock = `0x${parseInt(fromBlock).toString(16)}`
+
   try {
     const url = process.env.PROVIDER_URL
     const payload = {
@@ -54,7 +71,7 @@ async function getLogs(address, topics, fromBlock){
         {
           address,
           topics,
-          fromBlock,
+          fromBlock: hexBlock,
           toBlock: 'latest'
         }
       ]
@@ -68,8 +85,13 @@ async function getLogs(address, topics, fromBlock){
       },
       body: JSON.stringify(payload)
     }
+
     let result = await fetch(url, options)
     let data = await result.json()
+    console.log('logs data', JSON.stringify(data));
+    if (data.error) {
+      return { success: false, error: data.error?.message || 'Error fetching logs' }
+    }
     //return data.result[0].topics
     return data.result
   } catch (ex) {

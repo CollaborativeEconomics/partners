@@ -301,7 +301,7 @@ export default function Event({ id, event, media, contractNFT, contractV2E }) {
             </div>
           )}
           {eventStarted && (
-            <div className="w-full flex flex-row flex-wrap justify-center gap-4 mb-8">
+            <div className="w-full flex flex-row justify-between mb-8">
               <LinkButton
                 href={`/dashboard/events/register/${id}`}
                 text="REGISTER"
