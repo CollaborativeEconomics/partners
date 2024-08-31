@@ -105,7 +105,8 @@ export default function Event({ id, event, media, contractNFT, contractV2E }) {
 
   // TODO: move to config file
   const FactoryAddress = '0xD4E47912a12f506843F522Ea58eA31Fd313eB2Ee';
-  const usdcAddressTestnet = '0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d';
+  // const usdcAddressTestnet = '0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d'; public circle one
+  const usdcAddressTestnet = '0x80C2f901ABA1F95e5ddb2A5024E7Df6a366a3AB0'; // CFCE-controlled contract
   let NFTBlockNumber: number;
   let distributorBlockNumber: number;
 
