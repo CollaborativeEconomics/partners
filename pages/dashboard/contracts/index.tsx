@@ -10,12 +10,11 @@ import Dashboard from 'components/dashboard'
 import Sidebar from 'components/sidebar'
 import Title from 'components/title'
 import Select from 'components/form/select'
-import TextInput from 'components/form/textinput'
-import ButtonBlue from 'components/buttonblue'
 import Contract from 'components/contract'
+import ContractCredits from 'components/contract-credits'
 import styles from 'styles/dashboard.module.css'
 import { getOrganizationById, getContractsByOrganization } from 'utils/registry'
-import Chains from 'chains'
+import { ChainsList } from 'chains'
 
 type Dictionary = { [key:string]:any }
 
@@ -30,43 +29,28 @@ export async function getServerSideProps({req,res}) {
 }
 
 export default function Page({organization, contracts, initialChain, network}) {
-  console.log('Org', organization)
+  //console.log('Org', organization)
   //console.log('Ctr', contracts)
   const orgid = organization?.id || ''
-  const ButtonState = { READY: 0, WAIT: 1, DONE: 2 }
-  const initialName = 'Credits Contract' // TODO: Get from dropdown first element
-  const [contractName, setContractName] = useState(initialName)
-
-  function setButtonState(state) {
-    switch (state) {
-      case ButtonState.READY:
-        setButtonText('NEW CONTRACT')
-        setButtonDisabled(false)
-        break
-      case ButtonState.WAIT:
-        setButtonText('WAIT')
-        setButtonDisabled(true)
-        break
-      case ButtonState.DONE:
-        setButtonText('DONE')
-        setButtonDisabled(true)
-        break
-    }
-  }
+  const chains = ChainsList()
+  const initialWallets = listWallets(initialChain, network)  
+  const initialWallet = initialWallets[0]?.id
+  const initialContract = 'Credits' // TODO: get from config
+  const [wallets, setWallets] = useState(initialWallets)
+  console.log('wallets', organization.wallets)
+  console.log('wallet', initialWallet)
+  console.log('contract', initialContract)
 
   function filterWallets(wallets, chain, network) {
     console.log(chain, network)
-    console.log(wallets)
     const list = wallets?.filter(it=>it?.chain==chain)
     //const list = wallets?.filter(it=>(it?.chain==chain && it?.network==network))
     return list
   }
 
-
-  function listWallets() {
-    const wallets = filterWallets(organization?.wallets, initialChain, network)
-    console.log('WALLETS', wallets)
-    const list = wallets.map(it=>{ return {id:it.address, name:it.address} })
+  function listWallets(chain, network) {
+    const wallets = filterWallets(organization?.wallets, chain, network)
+    const list = wallets?.map(it=>{ return {id:it.address, name:it.address} })
     return list
   }
 
@@ -79,112 +63,32 @@ export default function Page({organization, contracts, initialChain, network}) {
     ]
   }
 
-  function argsForContract(type) {
-    switch(type){
-      case 'Credits': return [1,2,3]; break;
-    }
-    return null
-  }
-
   function listChains() {
-    return [
-      //{ id: 'Arbitrum',   name: 'Arbitrum' },
-      //{ id: 'Avalanche',   name: 'Avalanche' },
-      //{ id: 'Base',        name: 'Base' },
-      //{ id: 'Binance',     name: 'Binance' },
-      //{ id: 'Celo',        name: 'Celo' },
-      //{ id: 'EOS',         name: 'EOS' },
-      //{ id: 'Ethereum',    name: 'Ethereum' },
-      //{ id: 'Filecoin',    name: 'Filecoin' },
-      //{ id: 'Flare',       name: 'Flare' },
-      //{ id: 'Optimism',    name: 'Optimism' },
-      //{ id: 'Polygon',     name: 'Polygon' },
-      { id: 'Stellar',     name: 'Stellar' },
-      { id: 'Starknet',    name: 'Starknet' },
-      //{ id: 'XinFin',      name: 'XinFin' },
-      //{ id: 'XRPL',        name: 'XRPL' }
-    ]
+    const list = chains.map(it=>{ return { id: it, name: it } })
+    return list
   }
 
   function listInitiatives() {
-    // TODO: get from org.initiatives
-    return [
-      {id: '123456-789012', name: 'Save the world'}
-    ]
+    const list = organization.initiative.map(it=>{ return { id: it.tag, name: it.title } })
+    return list
   }
 
-  async function onSubmit(data) {
-    console.log('SUBMIT', data)
-    if (!data.chain) {
-      showMessage('Chain is required')
-      return
-    }
-    if (!data.wallet) {
-      showMessage('Wallet is required')
-      return
-    }
-    try {
-      showMessage('Deploying contract...')
-      setButtonState(ButtonState.WAIT)
-
-      // DEPLOY
-      // TODO: get args from form component
-      const args = argsForContract(data.contract_type)
-      console.log('ARGS', args)
-      //console.log(Chains[data.chain])
-      const ok = await Chains[data.chain]?.contracts[data.contract_type]?.deploy(args)
-      console.log('OK', ok)
-      if(!ok || ok?.error){
-        showMessage('Error deploying contract: ' + (ok?.error||'Contract not found'))
-        setButtonState(ButtonState.READY)
-        return
-      }
-      showMessage('Contract deployed successfully')
-      setButtonState(ButtonState.READY)
-    } catch (ex) {
-      console.error(ex)
-      showMessage('Error deploying contract: ' + ex.message)
-      setButtonState(ButtonState.READY)
-    }
-  }
-
-  const [buttonDisabled, setButtonDisabled] = useState(false)
-  const [buttonText, setButtonText] = useState('NEW CONTRACT')
-  const [message, showMessage] = useState('Select chain, wallet and contract options')
-  const [change, setChange] = useState(0)
+  const [ change, setChange ] = useState(0)
   const { register, watch } = useForm({
     defaultValues: {
-      chain: 'Stellar',
-      wallet: '0x123',
-      contract_type: 'Credits',
-      vendor: '',
-      vendor_fees: '90',
-      provider: '',
-      provider_fees: '10',
-      minimum: '1',
-      bucket: '20'
+      chain: initialChain,
+      wallet: initialWallet,
+      contract_type: initialContract
     }
   })
   const [
     chain,
     wallet,
     contract_type,
-    vendor,
-    vendor_fees,
-    provider,
-    provider_fees,
-    minimum,
-    bucket
   ] = watch([
     'chain',
     'wallet',
     'contract_type',
-    'vendor',
-    'vendor_fees',
-    'provider',
-    'provider_fees',
-    'minimum',
-    'bucket'
   ])
 
   // Used to refresh list of wallets after new record added
@@ -207,7 +111,7 @@ export default function Page({organization, contracts, initialChain, network}) {
             <Select
               label="Wallet"
               register={register('wallet')}
-              options={listWallets()}
+              options={listWallets(chain, network)}
             />
             <Select
               label="Contract Type"
@@ -216,43 +120,10 @@ export default function Page({organization, contracts, initialChain, network}) {
             />
           </form>
         </div>
+
         <div className={styles.mainBox}>
-          <Title text={contractName} />
-          <form className={styles.vbox}>
-            {/* PAGER */}
-            <div className="">
-              {/* PAGE */}
-              <div className="">
-                <TextInput label="Credit Vendor (Wallet address)" register={register('vendor')} />
-                <TextInput label="Vendor Fees (percentage)" register={register('vendor_fees')} />
-                <TextInput label="Credit Provider (Wallet address)" register={register('provider')} />
-                <TextInput label="Provider Fees (percentage)" register={register('provider_fees')} />
-                <TextInput label="Bucket Size" register={register('bucket')} />
-                <TextInput label="Minimum Donation" register={register('minimum')} />
-              </div>
-            </div>
-          </form>
-          <ButtonBlue
-            id="buttonSubmit"
-            text={buttonText}
-            disabled={buttonDisabled}
-            onClick={() =>
-              onSubmit({
-                chain,
-                wallet,
-                contract_type,
-                vendor,
-                vendor_fees,
-                provider,
-                provider_fees,
-                minimum,
-                bucket
-              })
-            }
-          />
-          <p id="message" className="text-center">
-            {message}
-          </p>
+          {/* PAGER TAB FOR MORE CONTRACTS HERE */}
+          <ContractCredits organizationId={orgid} chain={chain} network={network} wallet={wallet} contract_type={contract_type}/>
         </div>
         { contracts ? contracts.map((item) => (
           <div className={styles.mainBox} key={item.id}>

@@ -1,6 +1,7 @@
 import { BASE_FEE, Account, Address, Asset, Contract, Horizon, Keypair, Networks, Operation, SorobanDataBuilder, SorobanRpc, Transaction, TransactionBuilder, nativeToScVal, scValToNative, xdr } from '@stellar/stellar-sdk'
 import { signTransaction, WatchWalletChanges } from "@stellar/freighter-api"
 import Wallet from 'chains/wallets/freighter'
+import { apiFetch } from 'utils/api'
 import { randomNumber } from 'utils/random'
 
 export const networks = {
@@ -26,173 +27,71 @@ export const networks = {
   }
 }
 
-// Utility function to convert native types to ScvVals
-/*
-    scvBool
-    scvVoid
-    scvError
-    scvU32
-    scvI32
-    scvU64
-    scvI64
-    scvTimepoint
-    scvDuration
-    scvU128
-    scvI128
-    scvU256
-    scvI256
-    scvBytes
-    scvString
-    scvSymbol
-    scvVec
-    scvMap
-    scvAddress
-    scvContractInstance
-    scvLedgerKeyContractInstance
-    scvLedgerKeyNonce
-*/
-/*
-const scv = {
-  address: (a)=>{ return xdr.ScVal.scvAddress(Address.fromString(a)) },
-  bytes:   (s)=>{ return xdr.ScVal.scvBytes(s) },
-  string:  (s)=>{ return xdr.ScVal.scvString(s) },
-  symbol:  (s)=>{ return xdr.ScVal.scvSymbol(s) },
-  u32:     (n)=>{ return xdr.ScVal.scvU32(n) },
-  i128:    (s)=>{ return xdr.ScVal.scvI128(new xdr.Int128Parts({ lo: xdr.Uint64.fromString(s), hi: xdr.Int64.fromString("0") }))},
-  vector:  (a)=>{ return xdr.ScVal.scvVec(a) }
-}
-*/
-
-async function clientSign(xdr: string, network: string, address: string){
-  const url = "https://horizon-testnet.stellar.org"
-  const server = new Horizon.Server(url)
-  const signed = await signTransaction(xdr, { networkPassphrase: networks[network].passphrase, address })
-  if (signed.error) {
-    throw new Error(signed.error)
-  } else {
-    const signedXdr = signed.signedTxXdr
-    const submit = TransactionBuilder.fromXDR(signedXdr, url)
-    const response = await server.submitTransaction(submit)
-    return response
+// Usage
+// const contractId = getContractIdFromTx(successfulTransactionResponse)
+function getContractIdFromTx(tx) {
+  try {
+    const opResult = tx.resultXdr.result().results()[0]
+    const retValue = opResult.tr().invokeHostFunctionResult().success()
+    const contractId = Address.contract(retValue).toString()
+    return contractId
+  } catch(ex) {
+    console.error(ex)
+    return null
   }
 }
-
-async function watcher(callback){
-  const Watcher = new WatchWalletChanges(1000)
-
-  Watcher.watch((watcherResults) => {
-    console.log("Address", watcherResults.address)
-    console.log("Network", watcherResults.network)
-    console.log("PPhrase", watcherResults.networkPassphrase)
-    callback(watcherResults.address, watcherResults.network, watcherResults.networkPassphrase)
-  })
-
-  setTimeout(() => {
-    Watcher.stop() // after 30 seconds, stop watching
-  }, 30000)
-}
-
-
-
-
 
 
 // -- deploy --deployer GDDMYQEROCEBL75ZHJYLSEQMRTVT6BSXQHPEBITCXXQ5GGW65ETQAU5C --wasm_hash d433b471c3959a9d87702b3648a2214f2c8c8d716a000ae2c6e13be9bb68ad51 --salt 1234567890 --init_fn init --init_args '[{"u32":123}]'
 // credits contract constructor: initialize(e: Env, admin: Address, initiative: u128, provider: Address, vendor: Address, bucket: i128, xlm: Address) {
-// VARS [deployer, wasm_hash, salt, init_fn, init_args]
 // ARGS [admin, initiative, provider, vendor, bucket, xlm]
-async function deployCredits(args:[any]) {
+// VARS [deployer, wasm_hash, salt, init_fn, init_args]
+async function deployCredits(data) {
+  console.log('DATA', data)
   try {
     const network = networks.testnet // TODO: get from config
     const soroban = new SorobanRpc.Server(network.soroban, { allowHttp: true })
     const wallet = new Wallet()
     await wallet.init()
-    const info = await wallet.connect()
-    console.log('WALLET', info)
+    const walletInfo = await wallet.connect()
+    console.log('WALLET', walletInfo)
     console.log('-- Deploying')
 
-/*
-    const factory = 'CAKN7QXAWAUTTK5BOLL7WQGJHSDPX66RDREBRUSHIYCZYS27YFPCD43O' // TODO: get contract factory id from DB
-    const orgwallet = 'GDDMYQEROCEBL75ZHJYLSEQMRTVT6BSXQHPEBITCXXQ5GGW65ETQAU5C' // TODO: get from freighter wallet
-    const deployer = scv.address(orgwallet)
-    const wasm_hash = scv.bytes('d44487d42355ac978ddb16c28ac4672d91771e918bab07e2cc4c768e7f6fcee6') // TODO: get from contract info
-    const salt = scv.i128(randomNumber(10))
-    const init_fn = scv.symbol('initialize')
-    // Credits contract initializer arguments
-    const owner = 'GDDMYQEROCEBL75ZHJYLSEQMRTVT6BSXQHPEBITCXXQ5GGW65ETQAU5C' // TODO: get from args[0]
-    const admin = scv.address(owner) // TODO: get from args[0]
-    const initiative = nativeToScVal(1, {type: 'u128'}) // get from args[1]
-    const provider = scv.address('GCFED2OC5W2S46UYVUY6K3CDFXTCIY2FHU3RN2FM4P2WT224OYTTJXUL') // TODO: get from args[2]
-    const vendor = scv.address('GAXSRTCK6PFIQHNULHBEJOI4VV2T7YS7SZCXBP6CGGYRI56LCWWMZO7I') // TODO: get from args[3]
-    const bucket = scv.i128('20000000') // TODO: get from args[4]
-    const xlm = scv.address('CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC') // TODO: constant from config or args[5]
-    const init_args = scv.vector([admin, initiative, provider, vendor, bucket, xlm], {type: 'array'})
-*/
+    // Factory contract
+    const factoryContract = await apiFetch('contracts?entity_id=ALL&chain=Stellar&network=testnet&contract_type=Factory')
+    //console.log('REC', factoryContract)
+    if(!factoryContract || factoryContract?.error){
+      return {success:false, txid:null, contractId:null, block:null, error:'Factory contract not found'}
+    }
+    const factory = factoryContract?.result[0].contract_address
+    //const factory = 'CDSMZXFVEDWRNVCYPQPJBNEK5JXWAGSSSF6QQRWWC5DROVQAPVM6WJED'
+    console.log('FACTORY', factory)
 
-// TEST CONTRACT
-    console.log('Bytes', Buffer.from('d433b471c3959a9d87702b3648a2214f2c8c8d716a000ae2c6e13be9bb68ad51'))
-    const factory = 'CAKN7QXAWAUTTK5BOLL7WQGJHSDPX66RDREBRUSHIYCZYS27YFPCD43O' // TODO: get contract factory id from DB
-    const owner = 'GDDMYQEROCEBL75ZHJYLSEQMRTVT6BSXQHPEBITCXXQ5GGW65ETQAU5C' // TODO: get from freighter wallet
-    const deployer = new Address(owner).toScVal()
-    const wasm_hash = nativeToScVal(Buffer.from('643d51142adfaf4b6ed05ba167cffc1e2b91008e70d6c8d9d29ddd9bbc91dbf6'), {type: 'bytes'}) // TODO: get from contract info
-    //const wasm_hash = nativeToScVal(Buffer.from('d433b471c3959a9d87702b3648a2214f2c8c8d716a000ae2c6e13be9bb68ad51'), {type: 'bytes'}) // TODO: get from contract info
-    const salt = nativeToScVal(Buffer.from(randomNumber(32)), {type: 'bytes'})
-    const init_fn = nativeToScVal('init', {type: 'symbol'})
-    const anyval = nativeToScVal(1, {type: 'u32'})
-    const init_args = nativeToScVal([anyval], {type: 'u32'})
-    const args = [deployer, wasm_hash, salt, init_fn, init_args]
+    // Credits hash
+    const creditsHash = await apiFetch('contracts?entity_id=ALL&chain=Stellar&network=testnet&contract_type=CreditsHash')
+    //console.log('REC', creditsHash)
+    if(!creditsHash || creditsHash?.error){
+      return {success:false, txid:null, contractId:null, block:null, error:'Credits Hash not found'}
+    }
+    const hash = creditsHash?.result[0].contract_address
+    console.log('HASH', hash)
 
-
-/*  USE THIS
-    const factory = 'CAKN7QXAWAUTTK5BOLL7WQGJHSDPX66RDREBRUSHIYCZYS27YFPCD43O' // TODO: get contract factory id from DB
-    const orgwallet = 'GDDMYQEROCEBL75ZHJYLSEQMRTVT6BSXQHPEBITCXXQ5GGW65ETQAU5C' // TODO: get from freighter wallet
+    const xlmContract = 'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC' // TODO: constant from config
+    const orgwallet = walletInfo.account
     const deployer = new Address(orgwallet).toScVal()
-    const wasm_hash = nativeToScVal(Buffer.from('d44487d42355ac978ddb16c28ac4672d91771e918bab07e2cc4c768e7f6fcee6'), {type: 'bytes'}) // TODO: get from contract info
-    const salt = nativeToScVal(Buffer.from(randomNumber(10)), {type: 'bytes'})
+    const wasm_hash = nativeToScVal(Buffer.from(hash, 'hex'), {type: 'bytes'})
+    //const wasm_hash = nativeToScVal(Buffer.from('b78f56f322cc4cd99deb1964ce1c37e3fb3f75e4a3eaffbf63ddd2722dc81f9a', 'hex'), {type: 'bytes'}) // TODO: get from contract info
+    const salt = nativeToScVal(Buffer.from(randomNumber(32)), {type: 'bytes'})
     const init_fn = nativeToScVal('initialize', {type: 'symbol'})
-    const owner = 'GDDMYQEROCEBL75ZHJYLSEQMRTVT6BSXQHPEBITCXXQ5GGW65ETQAU5C' // TODO: get from args[0]
-    const admin = new Address(owner).toScVal() // TODO: get from args[0]
-    const initiative = nativeToScVal(1, {type: 'u128'}) // get from args[1]
-    const provider = new Address('GCFED2OC5W2S46UYVUY6K3CDFXTCIY2FHU3RN2FM4P2WT224OYTTJXUL').toScVal() // TODO: get from args[2]
-    const vendor = new Address('GAXSRTCK6PFIQHNULHBEJOI4VV2T7YS7SZCXBP6CGGYRI56LCWWMZO7I').toScVal() // TODO: get from args[3]
-    const bucket = nativeToScVal(20*10000000, { type: 'i128' }) // TODO: get from args[4]
-    const xlm = new Address('CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC').toScVal() // TODO: constant from config or args[5]
+    const owner = orgwallet
+    const admin = new Address(owner).toScVal()
+    const initiative = nativeToScVal(1, {type: 'u128'}) // Not used ???
+    const provider = new Address(data.provider)
+    const vendor = new Address(data.vendor).toScVal()
+    const bucket = nativeToScVal(data.bucket * 1000000, { type: 'i128' })
+    const xlm = new Address(xlmContract).toScVal()
     const init_args = nativeToScVal([admin, initiative, provider, vendor, bucket, xlm], {type: 'vector'})
     const args = [deployer, wasm_hash, salt, init_fn, init_args]
-*/
-
-/*
-  [
-      StellarSdk.xdr.ScVal.scvAddress(StellarSdk.Address.fromString(admin)),
-      StellarSdk.xdr.ScVal.scvString(name),
-      StellarSdk.xdr.ScVal.scvString(symbol)
-      StellarSdk.xdr.ScVal.scvU32(decimal),
-      StellarSDK.xdr.ScVal.scvI128(new StellarSDK.xdr.Int128Parts({
-          lo: StellarSDK.xdr.Uint64.fromString("123"),
-          hi: StellarSDK.xdr.Int64.fromString("0")
-      })),
-      StellarSDK.xdr.ScVal.scvVec([
-          StellarSDK.xdr.ScVal.scvI128(new StellarSDK.xdr.Int128Parts({
-              lo: StellarSDK.xdr.Uint64.fromString("100"),
-              hi: StellarSDK.xdr.Int64.fromString("0")
-          })),
-          StellarSDK.xdr.ScVal.scvI128(new StellarSDK.xdr.Int128Parts({
-              lo: StellarSDK.xdr.Uint64.fromString("200"),
-              hi: StellarSDK.xdr.Int64.fromString("0")
-          })),
-          StellarSDK.xdr.ScVal.scvI128(new StellarSDK.xdr.Int128Parts({
-              lo: StellarSDK.xdr.Uint64.fromString("300"),
-              hi: StellarSDK.xdr.Int64.fromString("0")
-          }))
-      ]),
-
-  ]
-*/
-    //const init_args = []
-    //const init_args = []
-    //const args = {deployer, wasm_hash, salt, init_fn, init_args}
-    //const args = [deployer, wasm_hash, salt, init_fn, init_args]
-    //const args = ['GDDMYQEROCEBL75ZHJYLSEQMRTVT6BSXQHPEBITCXXQ5GGW65ETQAU5C', 'd44487d42355ac978ddb16c28ac4672d91771e918bab07e2cc4c768e7f6fcee6', randomNumber(10), 'initialize' ]
     console.log('ARGS', args)
     const ctr = new Contract(factory)
     console.log('CTR', ctr)
@@ -262,6 +161,9 @@ async function deployCredits(args:[any]) {
       //const res = await wallet.signAndSend(xdr, opx)
       const sgn = await signTransaction(xdr, opx)
       console.log('SGN', sgn)
+      if(sgn?.error){
+        return {success:false, txid:null, contractId:null, block:null, error:sgn.error.message}
+      }
       // Now send it?
       const txs = TransactionBuilder.fromXDR(sgn.signedTxXdr, network.passphrase) // as Tx
       console.log('TXS', txs)
@@ -279,11 +181,14 @@ async function deployCredits(args:[any]) {
       console.log('TXID', txid)
       if(res?.status.toString() == 'ERROR'){
         console.log('TX ERROR')
-        return {success:false, txid, error:'Error deploying contract (950)'} // get error
+        return {success:false, txid, contractId:null, block:null, error:'Error deploying contract (950)'} // get error
       }
       if(res?.status.toString() == 'SUCCESS'){
         console.log('TX SUCCESS')
-        return {success:true, txid, error:null}
+        const contractId = getContractIdFromTx(res)
+        console.log("Contract ID:", contractId)
+        // @ts-ignore: I hate types. Ledger is part of the response, are you blind?
+        return {success:true, txid, contractId, block:res?.ledger.toString(), error:null}
       } else {
         // Wait for confirmation
         const secs = 1000
@@ -298,38 +203,39 @@ async function deployCredits(args:[any]) {
           console.log('INFO', info)
           if(info.status=='ERROR') {
             console.log('TX FAILED')
-            return {success:false, txid, error:'Error deploying contract (951)', extra:info} // get error
+            return {success:false, txid, contractId:null, block:null, error:'Error deploying contract (951)', extra:info} // get error
           }
           if(info.status=='NOT_FOUND' || info.status=='PENDING') {
             continue // Not ready in blockchain?
           }
           if(info.status=='SUCCESS'){
             console.log('TX SUCCESS2')
-            return {success:true, txid, error:null}
+            const contractId = getContractIdFromTx(info)
+            console.log("Contract ID:", contractId)
+            // @ts-ignore: I hate types. Ledger is part of the response, are you blind?
+            return {success:true, txid, contractId, block:info?.ledger.toString(), error:null}
           } else {
             console.log('TX FAILED2')
-            return {success:false, txid, error:'Error deploying contract (952)', extra:info} // get error
+            return {success:false, txid, contractId:null, block:null, error:'Error deploying contract (952)', extra:info} // get error
           }
         }
-        return {success:false, txid, error:'Error deploying contract - timeout (953)'} // get error
+        return {success:false, txid, contractId:null, block:null, error:'Error deploying contract - timeout (953)'} // get error
       }
     } else {
       console.log('BAD', sim)
-      return {success:false, txid:'', error:'Error deploying contract - bad simulation (954)'} // get error
+      return {success:false, txid:'', contractId:null, block:null, error:'Error deploying contract - bad simulation (954)'} // get error
     }
   } catch(ex) {
     console.log('ERROR', ex)
-    return {error:ex.message}
+    return {success:false, txid:'', contractId:null, block:null, error:ex.message}
   }
 }
-
-
 
 class StellarContracts {
   contracts = {
     Credits: {
-      deploy: async (args)=>{
-        const res = await deployCredits(args)
+      deploy: async (data)=>{
+        const res = await deployCredits(data)
         return res
       }
     }

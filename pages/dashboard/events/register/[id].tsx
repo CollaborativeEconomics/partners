@@ -11,7 +11,7 @@ import { BrowserQRCodeReader } from '@zxing/library';
 import TextInput from 'components/form/textinput';
 import { useAccount, useWriteContract } from 'wagmi';
 import { readContract, switchChain, waitForTransaction } from '@wagmi/core';
-import { arbitrumSepolia } from 'wagmi/chains';
+//import { arbitrumSepolia } from 'wagmi/chains';
 import { config } from 'chains/config';
 import { NFTAbi } from 'chains/contracts/volunteers/abis';
 import { getContract } from 'utils/registry';
@@ -22,6 +22,9 @@ import {
   LucideX,
 } from 'lucide-react';
 import clipboard from 'clipboardy';
+import * as wagmiChains from 'wagmi/chains'
+
+const arbitrumSepolia = wagmiChains['arbitrumSepolia']
 
 export async function getServerSideProps(context) {
   const id = context.query.id;

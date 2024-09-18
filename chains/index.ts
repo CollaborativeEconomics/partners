@@ -9,5 +9,8 @@ const Chains:Dictionary = {
   Stellar,
   Starknet
 }
+export function ChainsList(){
+  return Object.keys(Chains)
+}
 
 export default Chains
