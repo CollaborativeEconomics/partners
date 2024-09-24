@@ -10,6 +10,7 @@ import Dashboard from 'components/dashboard'
 import Sidebar from 'components/sidebar'
 import Title from 'components/title'
 import Select from 'components/form/select'
+import LinkButton from 'components/linkbutton'
 import Contract from 'components/contract'
 import ContractCredits from 'components/contract-credits'
 import styles from 'styles/dashboard.module.css'
@@ -41,6 +42,7 @@ export default function Page({organization, contracts, initialChain, network}) {
   console.log('wallet', initialWallet)
   console.log('contract', initialContract)
 
+
   function filterWallets(wallets, chain, network) {
     console.log(chain, network)
     const list = wallets?.filter(it=>it?.chain==chain)
@@ -59,6 +61,7 @@ export default function Page({organization, contracts, initialChain, network}) {
       //{ id: '721',     name: '721' },
       //{ id: '1155',    name: '1155' },
       { id: 'Credits', name: 'Credits' },
+      { id: 'NFTReceipt', name: 'NFTReceipt' },
       //{ id: 'V2E',     name: 'V2E' },
     ]
   }
@@ -91,10 +94,17 @@ export default function Page({organization, contracts, initialChain, network}) {
     'contract_type',
   ])
 
+  const url = `/dashboard/contract/${contract_type.toLowerCase()}?chain=${chain}&network=${network}&wallet=${wallet}&organizationId=${orgid}`
+  console.log('URL', url)
+
   // Used to refresh list of wallets after new record added
   useEffect(()=>{
     console.log('Wallets changed!', change)
   },[change])
+
+  function selectContract(contract){
+    console.log('SEL', contract)
+  }
 
   return (
     <Dashboard>
@@ -117,14 +127,12 @@ export default function Page({organization, contracts, initialChain, network}) {
               label="Contract Type"
               register={register('contract_type')}
               options={listContracts()}
+              onChange={selectContract}
             />
           </form>
         </div>
 
-        <div className={styles.mainBox}>
-          {/* PAGER TAB FOR MORE CONTRACTS HERE */}
-          <ContractCredits organizationId={orgid} chain={chain} network={network} wallet={wallet} contract_type={contract_type}/>
-        </div>
+        <LinkButton href={url} className="mb-12" text="CLICK TO START" />
         { contracts ? contracts.map((item) => (
           <div className={styles.mainBox} key={item.id}>
             <Contract key={item.id} {...item} />
