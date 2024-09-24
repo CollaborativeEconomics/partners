@@ -16,7 +16,7 @@ import ButtonBlue from 'components/buttonblue';
 import LinkButton from 'components/linkbutton';
 import { useConnect, useAccount, useWriteContract } from 'wagmi';
 import { readContract, switchChain, waitForTransaction } from '@wagmi/core';
-import { arbitrumSepolia } from 'wagmi/chains';
+//import { arbitrumSepolia } from 'wagmi/chains';
 import { config } from 'chains/config';
 import { FactoryAbi } from 'chains/contracts/volunteers/abis';
 import { parseEther } from 'viem';
@@ -24,6 +24,9 @@ import { parseEther } from 'viem';
 import { metaMask } from 'wagmi/connectors';
 import { net } from 'web3';
 import { apiFetch, apiPost } from 'utils/api';
+import * as wagmiChains from 'wagmi/chains'
+
+const arbitrumSepolia = wagmiChains['arbitrumSepolia']
 
 export async function getServerSideProps(context) {
   const id = context.query.id;

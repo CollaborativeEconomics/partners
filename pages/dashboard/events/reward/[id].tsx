@@ -10,11 +10,14 @@ import { getEventById } from 'utils/registry';
 import styles from 'styles/dashboard.module.css';
 import { useConnect, useAccount, useWriteContract } from 'wagmi';
 import { waitForTransactionReceipt } from '@wagmi/core';
-import { arbitrumSepolia } from 'wagmi/chains';
+//import { arbitrumSepolia } from 'wagmi/chains';
 import { config } from 'chains/config';
 import { DistributorAbi } from 'chains/contracts/volunteers/abis';
 import { getRegisteredAddresses, getReportedAddresses } from 'chains/logs';
 import { getContract } from 'utils/registry';
+import * as wagmiChains from 'wagmi/chains'
+
+const arbitrumSepolia = wagmiChains['arbitrumSepolia']
 
 export async function getServerSideProps(context) {
   const id = context.query.id;

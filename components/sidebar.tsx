@@ -102,6 +102,9 @@ const Sidebar = ({
           <li className={styles.menuItem}>
             <Link href="/dashboard/wallets">Wallets</Link>
           </li>
+          <li className={styles.menuItem}>
+            <Link href="/dashboard/contracts">Contracts</Link>
+          </li>
         </nav>
         <div className={styles.loginBox}>
           <div className={styles.signedInStatus}>
